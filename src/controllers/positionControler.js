@@ -6,7 +6,7 @@ const listPositions = async (req, res) => {
     const positions = await knex('cargos');
     return res.status(200).json(positions);
   } catch (error) {
-    return res.status(500).json({ mensagem: 'Erro no servidor!' });
+    return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
 
@@ -16,7 +16,7 @@ const addPosition = async (req, res) => {
   if (!funcao)
     return res
       .status(400)
-      .json({ mensagem: 'Informe a função que deseja cadastrar!' });
+      .json({ error: 'Informe a função que deseja cadastrar!' });
   try {
     const newPosition = {
       funcao,
@@ -24,9 +24,9 @@ const addPosition = async (req, res) => {
     const position = await knex('cargos').insert(newPosition).returning('*');
     return res
       .status(201)
-      .json({ mensagem: 'Novo cargo cadastrado com sucesso!' });
+      .json({ success: 'Novo cargo cadastrado com sucesso!' });
   } catch (error) {
-    return res.status(500).json({ mensagem: 'Erro no servidor!' });
+    return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
 
@@ -37,15 +37,15 @@ const removePosition = async (req, res) => {
   try {
     const existPosition = await knex('cargos').where('id', id);
     if (existPosition.length === 0)
-      return res.status(404).json({ mensagem: 'Cargo não encontrado!' });
+      return res.status(404).json({ error: 'Cargo não encontrado!' });
 
     const excluded = await knex('cargos').del().where('id', id);
     if (excluded.rowCount === 0)
-      return res.status(400).json({ mensagem: 'Cargo não excluído!' });
+      return res.status(400).json({ error: 'Cargo não excluído!' });
 
-    return res.status(200).json({ mensagem: 'Cargo excluído com sucesso!' });
+    return res.status(200).json({ success: 'Cargo excluído com sucesso!' });
   } catch (error) {
-    return res.status(500).json({ mensagem: 'Erro no servidor!' });
+    return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
 
