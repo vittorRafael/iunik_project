@@ -2,27 +2,57 @@ const knex = require('../config/connect');
 const bcrypt = require('bcrypt');
 
 const insertUser = async (req, res) => {
-  const { nome, sobrenome, email, senha, cargo_id } = req.body;
+  const {
+    nome,
+    cpf,
+    email,
+    rua,
+    bairro,
+    cep,
+    cidade,
+    estado,
+    senha,
+    agencia,
+    conta,
+    pix,
+    cargo_id,
+  } = req.body;
 
   if (!nome || !email || !senha)
     return res.status(400).json({ error: 'Preencha todos os campos!' });
+
+  if (!cpf || (cpf.length != 14 && cpf.length != 11))
+    return res.status(400).json({ error: 'CPF inválido!' });
 
   const existPosition = await knex('cargos').where('id', cargo_id);
   if (existPosition.length === 0)
     return res.status(404).json({ error: 'Cargo não encontrado!' });
 
   try {
-    const existUser = await knex('usuarios').where('email', email);
+    const cpfValid = cpf.replaceAll('.', '').replace('-', '');
+    const existUser = await knex('usuarios')
+      .where('email', email)
+      .orWhere('cpf', cpfValid);
 
     if (existUser.length > 0)
-      return res.status(400).json({ error: 'O email informado já existe!' });
+      return res
+        .status(400)
+        .json({ error: 'O email ou CPF informados já existem!' });
 
     const passCrip = await bcrypt.hash(senha, 10);
 
     const newUser = {
       nome,
-      sobrenome,
       email,
+      cpf: cpfValid,
+      rua,
+      bairro,
+      cep,
+      cidade,
+      estado,
+      agencia,
+      conta,
+      pix,
       senha: passCrip,
       cargo_id,
     };
@@ -36,6 +66,7 @@ const insertUser = async (req, res) => {
 
     return res.status(200).json({ success: 'Usuário cadastrado com sucesso!' });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
