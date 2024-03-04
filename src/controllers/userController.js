@@ -77,25 +77,72 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   const { id, ...userAtual } = req.userLogged;
-  const { nome, sobrenome, email, cargo_id } = req.body;
-  if (!nome && !sobrenome && !email && !cargo_id)
+  const {
+    nome,
+    cpf,
+    email,
+    rua,
+    bairro,
+    cep,
+    cidade,
+    estado,
+    agencia,
+    conta,
+    pix,
+    cargo_id,
+  } = req.body;
+  if (
+    !nome &&
+    !email &&
+    !cargo_id &&
+    !cpf &&
+    !rua &&
+    !bairro &&
+    !cep &&
+    !cidade &&
+    !estado &&
+    !agencia &&
+    !conta &&
+    !pix &&
+    !cpf
+  )
     return res.status(400).json({ error: 'Sem alterações!' });
 
-  const existUser = knex('usuarios').select('*').where('email', email);
-  if (existUser.length > 0)
-    return res.status(400).json({ error: 'O email informado já existe!' });
+  if (cpf && cpf.length != 14 && cpf.length != 11)
+    return res.status(400).json({ error: 'CPF inválido!' });
+
   try {
+    const cpfValid = cpf ? cpf.replaceAll('.', '').replace('-', '') : '';
+    const emailValid = email ? email : '';
+    const existUser = await knex('usuarios')
+      .where('email', emailValid)
+      .orWhere('cpf', cpfValid);
+
+    if (existUser.length > 0 && email != userAtual.email)
+      return res
+        .status(400)
+        .json({ error: 'O email ou CPF informados já existem!' });
+
     const data = {
       nome: nome || userAtual.nome,
-      sobrenome: sobrenome || userAtual.sobrenome,
       email: email || userAtual.email,
       cargo_id: cargo_id || userAtual.cargo_id,
+      cpf: cpfValid || userAtual.cpf,
+      rua: rua || userAtual.rua,
+      bairro: bairro || userAtual.bairro,
+      cep: cep || userAtual.cep,
+      cidade: cidade || userAtual.cidade,
+      estado: estado || userAtual.estado,
+      agencia: agencia || userAtual.agencia,
+      conta: conta || userAtual.conta,
+      pix: pix || userAtual.pix,
     };
 
     await knex('usuarios').where('id', id).update(data).returning('*');
 
     return res.status(200).json({ success: 'Usuário atualizado com sucesso!' });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
