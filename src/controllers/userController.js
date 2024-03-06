@@ -1,5 +1,6 @@
 const knex = require('../config/connect');
 const bcrypt = require('bcrypt');
+const fs = require('fs');
 
 const insertUser = async (req, res) => {
   const {
@@ -178,10 +179,49 @@ const listUsers = async (req, res) => {
   }
 };
 
+const addImg = async (req, res) => {
+  const { id } = req.userLogged;
+  const file = req.file;
+  try {
+    if (req.userLogged.srcperfil) {
+      fs.unlinkSync(req.userLogged.srcperfil);
+    }
+    await knex('usuarios')
+      .where('id', id)
+      .update({ srcperfil: file.path })
+      .returning('*');
+    res.json({ mensagem: 'Imagem adicionada com sucesso!' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Erro no servidor!' });
+  }
+};
+
+const removeImg = async (req, res) => {
+  const { id } = req.userLogged;
+  try {
+    if (req.userLogged.srcperfil) {
+      fs.unlinkSync(req.userLogged.srcperfil);
+      await knex('usuarios')
+        .where('id', id)
+        .update({ srcperfil: null })
+        .returning('*');
+      res.json({ mensagem: 'Foto do perfil removida com sucesso!' });
+    } else {
+      res
+        .status(400)
+        .json({ mensagem: 'Imagem não excluída, usuário sem foto do perfil!' });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: 'Erro no servidor!' });
+  }
+};
+
 module.exports = {
   insertUser,
   getProfile,
   updateProfile,
   deleteProfile,
   listUsers,
+  addImg,
+  removeImg,
 };

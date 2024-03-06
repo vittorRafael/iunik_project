@@ -21,9 +21,9 @@ create table usuarios (
   agencia text null,
   conta text null,
   pix text null,
+ 	srcPerfil text null,
   cargo_id int not null references cargos(id)
 );
-
 
 
 

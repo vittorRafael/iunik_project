@@ -3,6 +3,7 @@ const router = express();
 const userController = require('../controllers/userController');
 const loginController = require('../controllers/loginController');
 const checkLogin = require('../middlewares/checkLogin');
+const upload = require('../middlewares/addImg');
 
 // cadastro de usuario
 router.post('/usuarios', userController.insertUser);
@@ -17,6 +18,8 @@ router.post('/alterar_senha', loginController.updatePass);
 router.use(checkLogin);
 
 // obter e atualizar perfil do usuario logado
+router.post('/perfil/foto', upload.single('file'), userController.addImg);
+router.delete('/perfil/foto', userController.removeImg);
 router.get('/perfil', userController.getProfile);
 router.patch('/perfil', userController.updateProfile);
 router.delete('/perfil', userController.deleteProfile);
