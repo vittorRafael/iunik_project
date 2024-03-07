@@ -216,6 +216,43 @@ const removeImg = async (req, res) => {
   }
 };
 
+const addCert = async (req, res) => {
+  const { id } = req.userLogged;
+  const file = req.file;
+  try {
+    if (req.userLogged.srccert) {
+      fs.unlinkSync(req.userLogged.srccert);
+    }
+    await knex('usuarios')
+      .where('id', id)
+      .update({ srccert: file.path })
+      .returning('*');
+    res.json({ mensagem: 'Certificado adicionado com sucesso!' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Erro no servidor!' });
+  }
+};
+
+const removeCert = async (req, res) => {
+  const { id } = req.userLogged;
+  try {
+    if (req.userLogged.srccert) {
+      fs.unlinkSync(req.userLogged.srccert);
+      await knex('usuarios')
+        .where('id', id)
+        .update({ srccert: null })
+        .returning('*');
+      res.json({ mensagem: 'Certificado removido com sucesso!' });
+    } else {
+      res
+        .status(400)
+        .json({ mensagem: 'Certificado não excluída, usuário sem anexo!' });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: 'Erro no servidor!' });
+  }
+};
+
 module.exports = {
   insertUser,
   getProfile,
@@ -224,4 +261,6 @@ module.exports = {
   listUsers,
   addImg,
   removeImg,
+  addCert,
+  removeCert,
 };
