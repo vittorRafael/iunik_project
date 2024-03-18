@@ -25,11 +25,11 @@ const insertUser = async (req, res) => {
   if (!cpf || (cpf.length != 14 && cpf.length != 11))
     return res.status(400).json({ error: 'CPF inválido!' });
 
-  const existPosition = await knex('cargos').where('id', cargo_id);
-  if (existPosition.length === 0)
-    return res.status(404).json({ error: 'Cargo não encontrado!' });
-
   try {
+    const existPosition = await knex('cargos').where('id', cargo_id);
+    if (existPosition.length === 0)
+      return res.status(404).json({ error: 'Cargo não encontrado!' });
+
     const cpfValid = cpf.replaceAll('.', '').replace('-', '');
     const existUser = await knex('usuarios')
       .where('email', email)
@@ -67,7 +67,6 @@ const insertUser = async (req, res) => {
 
     return res.status(200).json({ success: 'Usuário cadastrado com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -143,7 +142,6 @@ const updateProfile = async (req, res) => {
 
     return res.status(200).json({ success: 'Usuário atualizado com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -190,7 +188,7 @@ const addImg = async (req, res) => {
       .where('id', id)
       .update({ srcperfil: file.path })
       .returning('*');
-    res.json({ mensagem: 'Imagem adicionada com sucesso!' });
+    return res.json({ success: 'Imagem adicionada com sucesso!' });
   } catch (error) {
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
@@ -205,11 +203,11 @@ const removeImg = async (req, res) => {
         .where('id', id)
         .update({ srcperfil: null })
         .returning('*');
-      res.json({ mensagem: 'Foto do perfil removida com sucesso!' });
+      return res.json({ success: 'Foto do perfil removida com sucesso!' });
     } else {
-      res
+      return res
         .status(400)
-        .json({ mensagem: 'Imagem não excluída, usuário sem foto do perfil!' });
+        .json({ error: 'Imagem não excluída, usuário sem foto do perfil!' });
     }
   } catch (error) {
     return res.status(500).json({ error: 'Erro no servidor!' });
@@ -227,7 +225,7 @@ const addCert = async (req, res) => {
       .where('id', id)
       .update({ srccert: file.path })
       .returning('*');
-    res.json({ mensagem: 'Certificado adicionado com sucesso!' });
+    return res.json({ success: 'Certificado adicionado com sucesso!' });
   } catch (error) {
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
@@ -242,11 +240,11 @@ const removeCert = async (req, res) => {
         .where('id', id)
         .update({ srccert: null })
         .returning('*');
-      res.json({ mensagem: 'Certificado removido com sucesso!' });
+      return res.json({ success: 'Certificado removido com sucesso!' });
     } else {
-      res
+      return res
         .status(400)
-        .json({ mensagem: 'Certificado não excluída, usuário sem anexo!' });
+        .json({ error: 'Certificado não excluída, usuário sem anexo!' });
     }
   } catch (error) {
     return res.status(500).json({ error: 'Erro no servidor!' });

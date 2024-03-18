@@ -61,7 +61,7 @@ const forgotPass = async (req, res) => {
     mailer.sendMail(
       {
         to: email,
-        from: 'rafaelsales202205@gmail.com',
+        from: 'rafaels202205@gmail.com',
         template: './forgotPass',
         context: { token },
       },
