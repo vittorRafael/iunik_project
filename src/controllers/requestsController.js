@@ -158,7 +158,26 @@ const balanceAvailable = async (req, res) => {
       }
     });
 
-    res.json('deu certo');
+    res.status(200).json({ success: 'Dados Atualizados!' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Erro no servidor!' });
+  }
+};
+
+const getBalance = async (req, res) => {
+  try {
+    const requestsSaldo = await knex('pedidos')
+      .where('consultpago', false)
+      .where('consultor_id', req.userLogged.id)
+      .where('saldodisp', true);
+
+    let saldodisp = 0;
+
+    requestsSaldo.forEach(async (request) => {
+      saldodisp += parseFloat(request.valorconsult);
+    });
+
+    return res.status(200).json({ saldodisp });
   } catch (error) {
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
@@ -170,4 +189,5 @@ module.exports = {
   editRequest,
   removeRequest,
   balanceAvailable,
+  getBalance,
 };
