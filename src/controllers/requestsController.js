@@ -20,8 +20,7 @@ const listRequests = async (req, res) => {
 
 const addRequest = async (req, res) => {
   const { consultor_id, cliente_id, formapag_id, produtos_ids } = req.body;
-  const valor = parseFloat(req.body.valor);
-  if (!valor || !consultor_id || !cliente_id || !formapag_id || !produtos_ids)
+  if (!consultor_id || !cliente_id || !formapag_id || !produtos_ids)
     return res.status(400).json({ error: 'Preencha todos os campos!' });
 
   try {
@@ -46,7 +45,20 @@ const addRequest = async (req, res) => {
         .status(400)
         .json({ error: 'O cliente não existe, tente novamente!' });
 
-    const valorconsult = valor * 0.4;
+    const products = await knex('produtos')
+      .whereIn('id', produtos_ids)
+      .where('inativo', false);
+    if (products.length !== produtos_ids.length)
+      return res
+        .status(400)
+        .json({ error: 'Produto selecionado não existe, tente novamente!' });
+
+    let valorconsult = 0;
+    let valor = 0;
+    products.forEach(async (product) => {
+      valorconsult += parseFloat(product.valorconsult);
+      valor += parseFloat(product.valortotal);
+    });
     const datapedido = dataAtualFormatada();
 
     const newRequest = {
@@ -63,6 +75,7 @@ const addRequest = async (req, res) => {
 
     return res.status(200).json({ success: 'Pedido cadastrado com sucesso!' });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
