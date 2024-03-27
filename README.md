@@ -243,7 +243,7 @@ ex: {
 	"valormax": 400
 }
 - Enviar Auth Bearer Token na requisição passando o token de login.
-- - Pode editar todos os campos iguais ao do cadastro, de uma vez ou um por vez.
+- Pode editar todos os campos iguais ao do cadastro, de uma vez ou um por vez.
 - Retorno - Mensagem de sucesso ou erro em json.
 
 
