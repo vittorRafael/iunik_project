@@ -135,3 +135,138 @@ ex: {
 - Enviar Auth Bearer Token na requisição passando o token de login.
 
 - Retorno - Mensagem de sucesso ou erro em json.
+
+
+## Rotas de Login:
+
+### - Entrar
+
+- Parâmetro Post - http://localhost:3000/login
+- Corpo da requisição em json.
+ex: {
+    "email": "teste@gmail.com",
+	"senha": "teste123"
+}
+
+- Retorno - Um objeto com os dados do usuário logado e o token de autenticação.
+
+### - Esqueci senha
+
+- Parâmetro Post - http://localhost:3000/esqueceu_senha
+- Corpo da requisição em json.
+ex: {
+    "email": "teste@gmail.com",
+}
+
+- Um email irá ser enviado com um token para recuperar a senha. Após ter chegado o token, acesse a rota [Alterar Senha](#--Alterar-senha)
+
+- Retorno - Mensagem de sucesso ou erro em json.
+
+
+
+### - Alterar senha
+
+- Parâmetro Post - http://localhost:3000/alterar_senha
+- Corpo da requisição em json
+ex: {
+	"email": "teste.com",
+	"token": "7485819679df159db2dede4b6a70d0a60575e018",
+	"senha": "teste123"
+}
+
+- Se o token estiver correto e não expirado a senha irá ser alterada.
+- Retorno - Mensagem de sucesso ou erro em json.
+
+
+## Rotas para Consultores: 
+
+### - Listar Consultores
+
+- Parâmetro Get - http://localhost:3000/consultores/:id
+
+- Em :id colocar id do consultor que quer ser detalhado, caso queira todos os registros passar "0".
+ex: http://localhost:3000/consultores/0
+
+- Enviar Auth Bearer Token na requisição passando o token de login.
+
+- Retorno - Lista json com os usuários com cargo de consultor cadastrados.
+
+### - Bloquear Consultor
+
+- Parâmetro Patch - http://localhost:3000/consultores/:id
+- Em :id colocar id do consultor que irá ser bloqueado.
+ex: http://localhost:3000/consultores/1
+
+- Enviar Auth Bearer Token na requisição passando o token de login.
+- Retorno - Mensagem de sucesso ou erro em json.
+
+
+## Rotas para Produtos:
+
+### - Listar Produtos
+
+- Parâmetro Get - http://localhost:3000/produtos/:id
+
+- Em :id colocar id do produto que quer ser detalhado, caso queira todos os registros passar "0".
+ex: http://localhost:3000/produtos/0
+
+- Enviar Auth Bearer Token na requisição passando o token de login.
+
+- Retorno - Lista json com os registros da tabela produtos.
+
+### - Adicionar Produto
+
+- Parâmetro Post - http://localhost:3000/produtos
+- Corpo da requisição em json
+ex: {
+	"nome": "Teste",
+	"descricao": "Descrição Teste",
+	"valorprod": 1000,
+	"valormin": 200,
+	"valormax": 400
+}
+- Enviar Auth Bearer Token na requisição passando o token de login.
+- O valor do consultor irá sempre começar no valor mínimo, para alterá-lo acesse [Valor consultor](#--Valor-Consultor-Produto).
+- Retorno - Mensagem de sucesso ou erro em json.
+
+### - Editar Produto
+
+- Parâmetro Post - http://localhost:3000/produtos/:id
+- Em :id colocar id do produto que irá ser alterado.
+ex: http://localhost:3000/produtos/1
+- Corpo da requisição em json
+ex: {
+	"nome": "Teste",
+	"descricao": "Descrição Teste",
+	"valorprod": 1000,
+	"valormin": 200,
+	"valormax": 400
+}
+- Enviar Auth Bearer Token na requisição passando o token de login.
+- - Pode editar todos os campos iguais ao do cadastro, de uma vez ou um por vez.
+- Retorno - Mensagem de sucesso ou erro em json.
+
+
+### - Valor Consultor Produto
+
+- Parâmetro Patch - http://localhost:3000/produtos/:id/valorconsult
+- Em :id colocar id do produto que irá ser alterado.
+ex: http://localhost:3000/produtos/1/valorconsult
+
+- Corpo da requisição em json.
+ex: {
+	"valorconsult": 610.90
+}
+
+- Enviar Auth Bearer Token na requisição passando o token de login.
+
+- Retorno - Mensagem de sucesso ou erro em json.
+
+### - Deletar Produto
+
+- Parâmetro Delete - http://localhost:3000/produtos/:id
+
+- Em :id colocar id do produto que irá ser removido.
+ex: http://localhost:3000/produtos/1
+
+- Retorno - Mensagem de sucesso ou erro em json.
