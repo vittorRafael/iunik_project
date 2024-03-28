@@ -270,3 +270,43 @@ ex: {
 ex: http://localhost:3000/produtos/1
 
 - Retorno - Mensagem de sucesso ou erro em json.
+
+
+## Rotas para Pedidos:
+
+### - Listar Pedidos
+
+- Parâmetro Get - http://localhost:3000/pedidos/:id
+
+- Em :id colocar id do pedido que quer ser detalhado, caso queira todos os registros passar "0".
+ex: http://localhost:3000/pedidos/0
+
+- Enviar Auth Bearer Token na requisição passando o token de login.
+
+- Retorno - Lista json com os registros da tabela pedidos.
+
+
+### - Adicionar Pedido
+
+- Parâmetro Post - http://localhost:3000/pedidos/
+- Corpo da requisição em json
+ex: {
+    "produtos_ids": [1,2],
+	"formapag_id": 1,
+	"consultor_id": 1,
+	"cliente_id": 2
+}
+
+- O campo "produtos_ids" são os ids da dos registros da tabela produtos que estarão nesse pedido.
+- O campo "formapag_id" o id da forma de pagamento que ira ser feito o pedido.
+
+- Enviar Auth Bearer Token na requisição passando o token de login.
+
+- Retorno - mensagem de sucesso ou erro em json.
+
+
+### - Editar Pedido
+
+- Parâmetro Post - http://localhost:3000/pedidos/:id
+- Em :id colocar id do pedido que irá ser alterado.
+ex: http://localhost:3000/pedidos/1
