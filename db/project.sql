@@ -56,9 +56,19 @@ create table produtos (
 	id serial primary key,
   nome text not null,
   descricao text not null,
- 	valorMin decimal not null,
-  valorConsult decimal not null,
+  valorMin decimal not null,
+  valorMax decimal not null,
+  valorVenda decimal not null,
+  inativo boolean default false,
   mediaAvs decimal null default 0.0
+);
+
+create table consultor_produtos(
+  id serial primary key,
+  produto_id int not null references produtos(id),
+  consultor_id int not null references usuarios(id),
+  valorConsult decimal not null,
+  valorTotal decimal not null
 );
 
 create table avaliacoes (
