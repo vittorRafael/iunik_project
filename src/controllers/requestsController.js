@@ -45,9 +45,13 @@ const addRequest = async (req, res) => {
         .status(400)
         .json({ error: 'O cliente não existe, tente novamente!' });
 
-    const products = await knex('produtos')
-      .whereIn('id', produtos_ids)
-      .where('inativo', false);
+    const products = await knex('consultor_produtos')
+      .select(['*', 'consultor_produtos.id'])
+      .whereIn('produto_id', produtos_ids)
+      .where('produtos.inativo', false)
+      .where('consultor_id', consultor_id)
+      .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id');
+
     if (products.length !== produtos_ids.length)
       return res
         .status(400)

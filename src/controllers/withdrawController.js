@@ -1,5 +1,6 @@
 const knex = require('../config/connect');
 const { dataAtualFormatada } = require('../functions/functions');
+const fs = require('fs');
 
 const addWithdraw = async (req, res) => {
   try {
@@ -24,6 +25,11 @@ const addWithdraw = async (req, res) => {
       valorsaque,
       pedidos_ids,
     };
+
+    if (data.valorsaque === 0)
+      return res
+        .status(400)
+        .json({ error: 'Sem valor disponível para saque!' });
 
     await knex('saques').insert(data);
     return res.json({ success: 'Saque solicitado com sucesso!' });
@@ -82,8 +88,53 @@ const removeWithdraw = async (req, res) => {
   }
 };
 
+const addComprov = async (req, res) => {
+  const { id } = req.params;
+  const file = req.file;
+  try {
+    if (req.userLogged.srcperfil) {
+      fs.unlinkSync(req.userLogged.srcperfil);
+    }
+    await knex('saques')
+      .where('id', id)
+      .update({ srccomp: file.path })
+      .returning('*');
+    return res.json({ success: 'Comprovante adicionado com sucesso!' });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: 'Erro no servidor!' });
+  }
+};
+
+const removeComprov = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const withdraws = await knex('saques').where('id', id);
+    if (withdraws.length === 0)
+      return res.status(404).json({ error: 'Saque não encontrado!' });
+
+    if (withdraws[0].srccomp) {
+      fs.unlinkSync(withdraws[0].srccomp);
+      await knex('saques')
+        .where('id', id)
+        .update({ srccomp: null })
+        .returning('*');
+      return res.json({ success: 'Comprovante removido com sucesso!' });
+    } else {
+      return res.status(400).json({
+        error: 'Comprovante não excluído, saque não possui comprovante!',
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: 'Erro no servidor!' });
+  }
+};
+
 module.exports = {
   addWithdraw,
   listWithdraws,
   removeWithdraw,
+  addComprov,
+  removeComprov,
 };
