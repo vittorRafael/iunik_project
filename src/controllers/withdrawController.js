@@ -24,6 +24,7 @@ const addWithdraw = async (req, res) => {
       datasaque,
       valorsaque,
       pedidos_ids,
+      consultor_id: req.userLogged.id,
     };
 
     if (data.valorsaque === 0)

@@ -4,7 +4,7 @@ const listConsults = async (req, res) => {
   const { id } = req.params;
   try {
     if (id < 1) {
-      const users = await knex('usuarios').select('*').where('cargo_id', 3);
+      const users = await knex('usuarios').select('*').where('cargo_id', 2);
       return res.status(200).json(users);
     } else {
       const user = await knex('usuarios')

@@ -19,10 +19,10 @@ const listRequests = async (req, res) => {
 };
 
 const addRequest = async (req, res) => {
-  const { consultor_id, cliente_id, formapag_id, produtos_ids } = req.body;
-  if (!consultor_id || !cliente_id || !formapag_id || !produtos_ids)
+  const { consultor_id, cliente_id, formapag_id, produtos_ids, modelo } =
+    req.body;
+  if (!consultor_id || !cliente_id || !formapag_id || !produtos_ids || !modelo)
     return res.status(400).json({ error: 'Preencha todos os campos!' });
-
   try {
     const existFormPag = await knex('formaspagamento').where('id', formapag_id);
     if (existFormPag.length === 0)
@@ -31,7 +31,7 @@ const addRequest = async (req, res) => {
         .json({ error: 'Forma de pagamento inválida, tente novamente!' });
     const existConsult = await knex('usuarios')
       .where('id', consultor_id)
-      .where('cargo_id', 3);
+      .where('cargo_id', 2);
     if (existConsult.length === 0)
       return res
         .status(400)
@@ -39,7 +39,7 @@ const addRequest = async (req, res) => {
 
     const existCliente = await knex('usuarios')
       .where('id', cliente_id)
-      .where('cargo_id', 4);
+      .where('cargo_id', 3);
     if (existCliente.length === 0)
       return res
         .status(400)
@@ -73,6 +73,7 @@ const addRequest = async (req, res) => {
       consultor_id,
       cliente_id,
       produtos_ids,
+      modelo,
     };
 
     await knex('pedidos').insert(newRequest).returning('*');

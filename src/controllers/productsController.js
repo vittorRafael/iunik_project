@@ -42,6 +42,19 @@ const listProducts = async (req, res) => {
   }
 };
 
+const listProductsConsult = async (req, res) => {
+  try {
+    const products = await knex('consultor_produtos')
+      .select(['*', 'consultor_produtos.id'])
+      .where('produtos.inativo', false)
+      .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id');
+
+    return res.status(200).json(products);
+  } catch (error) {
+    return res.status(500).json({ error: 'Erro no servidores!' });
+  }
+};
+
 const editProduct = async (req, res) => {
   const { id } = req.params;
   try {
@@ -106,4 +119,5 @@ module.exports = {
   listProducts,
   editProduct,
   removeProduct,
+  listProductsConsult,
 };
