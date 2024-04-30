@@ -7,6 +7,7 @@ create table usuarios (
   id serial primary key,
   nome text not null,
   email text unique not null, 
+  telefone text not null,
   cpf text unique not null,
   rua text null,
   bairro text null,
@@ -21,7 +22,9 @@ create table usuarios (
   pix text null,
  	srcPerfil text null,
   srcCert text null,
-  inativo boolean default false,
+  status boolean default false,
+  totalFat decimal default 0.0,
+  valorDispSaque decimal default 0.0,
   cargo_id int not null references cargos(id)
 );
 
@@ -35,6 +38,10 @@ create table pedidos (
   dataPedido text not null,
   valor decimal not null,
   valorConsult decimal not null,
+  valorFrete decimal not null,
+  statuspag text default 'aguardando',
+  statusentrega text default 'em andamento',
+  modelo text not null,
   consultPago boolean default false,
   saldodisp boolean default false,
   produtos_ids int array not null,
@@ -49,7 +56,7 @@ create table saques (
   valorSaque decimal not null,
   status text default 'pendente',
   srcComp text null,
-  pedidos_ids int array not null
+  consultor_id int not null references usuarios(id)
 );
 
 create table produtos (
@@ -60,7 +67,13 @@ create table produtos (
   valorMax decimal not null,
   valorVenda decimal not null,
   inativo boolean default false,
-  mediaAvs decimal null default 0.0
+  mediaAvs decimal null default 0.0,
+  estoque int default 0,
+  altura decimal null,
+  peso decimal null,
+  largura decimal null,
+  produndidade decimal null,
+  imagens text array null
 );
 
 create table consultor_produtos(
