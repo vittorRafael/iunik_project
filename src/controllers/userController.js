@@ -7,6 +7,7 @@ const insertUser = async (req, res) => {
     nome,
     cpf,
     email,
+    telefone,
     rua,
     bairro,
     cep,
@@ -22,6 +23,9 @@ const insertUser = async (req, res) => {
   if (!nome || !email || !senha)
     return res.status(400).json({ error: 'Preencha todos os campos!' });
 
+  if (!telefone || telefone.length < 11)
+    return res.status(400).json({ error: 'Telefone inválido!' });
+
   if (!cpf || (cpf.length != 14 && cpf.length != 11))
     return res.status(400).json({ error: 'CPF inválido!' });
 
@@ -31,6 +35,12 @@ const insertUser = async (req, res) => {
       return res.status(404).json({ error: 'Cargo não encontrado!' });
 
     const cpfValid = cpf.replaceAll('.', '').replace('-', '');
+    const telefoneValid = telefone
+      .replaceAll('(', '')
+      .replaceAll(')', '')
+      .replaceAll(' ', '')
+      .replaceAll('+', '')
+      .replaceAll('-', '');
     const existUser = await knex('usuarios')
       .where('email', email)
       .orWhere('cpf', cpfValid);
@@ -45,6 +55,7 @@ const insertUser = async (req, res) => {
     const newUser = {
       nome,
       email,
+      telefone: telefoneValid,
       cpf: cpfValid,
       rua,
       bairro,
@@ -81,6 +92,7 @@ const updateProfile = async (req, res) => {
     nome,
     cpf,
     email,
+    telefone,
     rua,
     bairro,
     cep,
@@ -104,15 +116,26 @@ const updateProfile = async (req, res) => {
     !agencia &&
     !conta &&
     !pix &&
-    !cpf
+    !cpf &&
+    !telefone
   )
     return res.status(400).json({ error: 'Sem alterações!' });
 
   if (cpf && cpf.length != 14 && cpf.length != 11)
     return res.status(400).json({ error: 'CPF inválido!' });
+  if (telefone && telefone.length < 11)
+    return res.status(400).json({ error: 'Telefone inválido!' });
 
   try {
     const cpfValid = cpf ? cpf.replaceAll('.', '').replace('-', '') : '';
+    const telefoneValid = telefone
+      ? telefone
+          .replaceAll('(', '')
+          .replaceAll(')', '')
+          .replaceAll(' ', '')
+          .replaceAll('+', '')
+          .replaceAll('-', '')
+      : '';
     const emailValid = email ? email : '';
     const existUser = await knex('usuarios')
       .where('email', emailValid)
@@ -128,6 +151,7 @@ const updateProfile = async (req, res) => {
       email: email || userAtual.email,
       cargo_id: cargo_id || userAtual.cargo_id,
       cpf: cpfValid || userAtual.cpf,
+      telefone: telefoneValid || userAtual.telefone,
       rua: rua || userAtual.rua,
       bairro: bairro || userAtual.bairro,
       cep: cep || userAtual.cep,

@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const mailer = require('../modules/mailer');
+require('dotenv').config();
 
 const login = async (req, res) => {
   const { email, senha } = req.body;
@@ -61,7 +62,7 @@ const forgotPass = async (req, res) => {
     mailer.sendMail(
       {
         to: email,
-        from: 'rafaelsales202205@gmail.com',
+        from: process.env.FROM_MAIL,
         template: './forgotPass',
         context: { token },
       },
