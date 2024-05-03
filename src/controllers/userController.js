@@ -174,12 +174,33 @@ const deleteProfile = async (req, res) => {
   const { id } = req.userLogged;
 
   try {
+    //deletando todo produtos do consultor
+    const productDeleted = await knex('consultor_produtos')
+      .del()
+      .where('consultor_id', id);
+    if (productDeleted.rowCount === 0)
+      return res.status(400).json({
+        error: 'Não foi possível excluir o Produto, tente novamente!',
+      });
+
+    //deletando todos as vendas do consultor
+    const requestDeleted = await knex('pedidos')
+      .del()
+      .where('consultor_id', id);
+    if (requestDeleted.rowCount === 0)
+      return res
+        .status(400)
+        .json({ error: 'Não foi possível excluir o Pedido, tente novamente!' });
+
     const userDeleted = await knex('usuarios').del().where('id', id);
+    if (userDeleted === 0)
+      return res.status(404).json({ error: 'Usuário não encontrado!' });
     if (userDeleted.rowCount === 0)
       return res.status(400).json({ error: 'O usuário não foi excluido!' });
 
     return res.status(200).json({ success: 'Usuário excluído com sucesso!' });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };

@@ -19,9 +19,16 @@ const listRequests = async (req, res) => {
 };
 
 const addRequest = async (req, res) => {
-  const { consultor_id, cliente_id, formapag_id, produtos_ids, modelo } =
-    req.body;
-  if (!consultor_id || !cliente_id || !formapag_id || !produtos_ids || !modelo)
+  const { formapag_id, produtos_ids, modelo } = req.body;
+  const valorfrete = parseFloat(req.body.valorfrete) || 0;
+
+  let user_id = req.userLogged.id;
+  let consultor_id = 1;
+  let cliente_id = 1;
+  let valorconsult = 0;
+  let valor = 0;
+
+  if (!formapag_id || !produtos_ids || !modelo)
     return res.status(400).json({ error: 'Preencha todos os campos!' });
   try {
     const existFormPag = await knex('formaspagamento').where('id', formapag_id);
@@ -29,40 +36,54 @@ const addRequest = async (req, res) => {
       return res
         .status(400)
         .json({ error: 'Forma de pagamento inválida, tente novamente!' });
+
     const existConsult = await knex('usuarios')
-      .where('id', consultor_id)
-      .where('cargo_id', 2);
-    if (existConsult.length === 0)
-      return res
-        .status(400)
-        .json({ error: 'O consultor não existe, tente novamente!' });
+      .where('id', user_id)
+      .where('cargo_id', 4);
+    if (existConsult.length === 0) {
+      const existCliente = await knex('usuarios')
+        .where('id', user_id)
+        .where('cargo_id', 5);
+      if (existCliente.length === 0)
+        return res
+          .status(400)
+          .json({ error: 'O cliente não existe, tente novamente!' });
 
-    const existCliente = await knex('usuarios')
-      .where('id', cliente_id)
-      .where('cargo_id', 3);
-    if (existCliente.length === 0)
-      return res
-        .status(400)
-        .json({ error: 'O cliente não existe, tente novamente!' });
+      cliente_id = user_id;
 
-    const products = await knex('consultor_produtos')
-      .select(['*', 'consultor_produtos.id'])
-      .whereIn('produto_id', produtos_ids)
-      .where('produtos.inativo', false)
-      .where('consultor_id', consultor_id)
-      .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id');
+      const products = await knex('produtos')
+        .select('*')
+        .whereIn('id', produtos_ids)
+        .where('inativo', false);
+      if (products.length !== produtos_ids.length)
+        return res
+          .status(400)
+          .json({ error: 'Produto selecionado não existe, tente novamente!' });
 
-    if (products.length !== produtos_ids.length)
-      return res
-        .status(400)
-        .json({ error: 'Produto selecionado não existe, tente novamente!' });
+      products.forEach(async (product) => {
+        valor += parseFloat(product.valorvenda);
+      });
+    } else {
+      consultor_id = user_id;
 
-    let valorconsult = 0;
-    let valor = 0;
-    products.forEach(async (product) => {
-      valorconsult += parseFloat(product.valorconsult);
-      valor += parseFloat(product.valortotal);
-    });
+      const products = await knex('consultor_produtos')
+        .select(['*', 'consultor_produtos.id'])
+        .whereIn('produto_id', produtos_ids)
+        .where('produtos.inativo', false)
+        .where('consultor_id', consultor_id)
+        .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id');
+
+      if (products.length !== produtos_ids.length)
+        return res
+          .status(400)
+          .json({ error: 'Produto selecionado não existe, tente novamente!' });
+
+      products.forEach(async (product) => {
+        valorconsult += parseFloat(product.valorconsult);
+        valor += parseFloat(product.valortotal);
+      });
+    }
+
     const datapedido = dataAtualFormatada();
 
     const newRequest = {
@@ -70,6 +91,7 @@ const addRequest = async (req, res) => {
       formapag_id,
       valor: valor.toFixed(2),
       valorconsult: valorconsult.toFixed(2),
+      valorfrete: valorfrete.toFixed(2),
       consultor_id,
       cliente_id,
       produtos_ids,
@@ -89,47 +111,25 @@ const editRequest = async (req, res) => {
   const { id } = req.params;
   try {
     const request = await knex('pedidos').where('id', id);
-    const { consultor_id, cliente_id } = req.body;
-    let valor = req.body.valor;
-    if (!valor && !consultor_id && !cliente_id)
+    if (request.length === 0)
+      return res.status(404).json({ error: 'Pedido não encontrado!' });
+    const valorfrete = req.body.valorfrete
+      ? parseFloat(req.body.valorfrete).toFixed(2)
+      : request[0].valorfrete;
+    const { statuspag, statusentrega } = req.body;
+    if (!statusentrega && !statuspag)
       return res.status(400).json({ error: 'Nenhuma alteração encontrada!' });
 
-    if (consultor_id) {
-      const existConsult = await knex('usuarios')
-        .where('id', consultor_id)
-        .where('cargo_id', 3);
-      if (existConsult.length === 0)
-        return res
-          .status(404)
-          .json({ error: 'O consultor não existe, tente novamente!' });
-    }
-
-    if (cliente_id) {
-      const existCliente = await knex('usuarios')
-        .where('id', cliente_id)
-        .where('cargo_id', 4);
-      if (existCliente.length === 0)
-        return res
-          .status(404)
-          .json({ error: 'O cliente não existe, tente novamente!' });
-    }
-
-    valor = valor ?? request[0].valor;
-    const valorconsult = valor * 0.4;
-
     const data = {
-      dataPedido: request[0].dataPedido,
-      valor: parseFloat(valor).toFixed(2),
-      valorconsult: valorconsult.toFixed(2),
-      consultor_id: consultor_id ?? request[0].consultor_id,
-      cliente_id: cliente_id ?? request[0].cliente_id,
+      statusentrega,
+      statuspag,
+      valorfrete,
     };
 
     await knex('pedidos').where('id', id).update(data).returning('*');
 
     return res.status(200).json({ success: 'Pedido atualizado com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -138,7 +138,14 @@ const removeRequest = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const requestDeleted = await knex('pedidos').del().where('id', id);
+    const requestDeleted = await knex('pedidos')
+      .del()
+      .where('id', id)
+      .where({ saldodisp: false });
+    if (requestDeleted === 0)
+      return res.status(404).json({
+        error: 'Pedido não encontrado ou pagamento já foi realizado!',
+      });
     if (requestDeleted.rowCount === 0)
       return res
         .status(400)
@@ -154,25 +161,41 @@ const balanceAvailable = async (req, res) => {
   try {
     const requests = await knex('pedidos')
       .where('consultpago', false)
-      .where('consultor_id', req.userLogged.id)
       .where('saldodisp', false);
 
     requests.forEach(async (request) => {
       const today = dataAtualFormatada();
+      const res = await knex('usuarios')
+        .select('valordispsaque')
+        .where('id', request.consultor_id);
+      const valordispsaque =
+        parseFloat(res[0].valordispsaque) + parseFloat(request.valorconsult);
       if (
         request.formapag_id === 1 &&
-        compararDatas(today, request.datapedido, 7)
+        compararDatas(today, request.datapedido, 7) &&
+        request.statuspag == 'realizado'
       ) {
         await knex('pedidos')
           .update({ saldodisp: true })
           .where('id', request.id);
+        await knex('usuarios')
+          .update({
+            valordispsaque: valordispsaque.toFixed(2),
+          })
+          .where('id', request.consultor_id);
       } else if (
-        request.formapag_id === 4 &&
-        compararDatas(today, request.datapedido, 30)
+        request.formapag_id === 2 &&
+        compararDatas(today, request.datapedido, 30) &&
+        request.statuspag == 'realizado'
       ) {
         await knex('pedidos')
           .update({ saldodisp: true })
           .where('id', request.id);
+        await knex('usuarios')
+          .update({
+            valordispsaque: valordispsaque.toFixed(2),
+          })
+          .where('id', request.consultor_id);
       }
     });
 
@@ -183,10 +206,11 @@ const balanceAvailable = async (req, res) => {
 };
 
 const getBalance = async (req, res) => {
+  const { id } = req.params;
   try {
     const requestsSaldo = await knex('pedidos')
       .where('consultpago', false)
-      .where('consultor_id', req.userLogged.id)
+      .where('consultor_id', id)
       .where('saldodisp', true);
 
     let saldodisp = 0;
@@ -194,6 +218,11 @@ const getBalance = async (req, res) => {
     requestsSaldo.forEach(async (request) => {
       saldodisp += parseFloat(request.valorconsult);
     });
+
+    const requestRest = await knex('pedidos').where('resto', '>', 0);
+    if (requestRest.length > 0) {
+      saldodisp += parseFloat(requestRest[0].resto);
+    }
 
     return res.status(200).json({ saldodisp });
   } catch (error) {

@@ -5,6 +5,11 @@ const addProduct = async (req, res) => {
   const valorvenda = parseFloat(req.body.valorvenda);
   const valormin = parseFloat(req.body.valormin);
   const valormax = parseFloat(req.body.valormax);
+  const altura = parseFloat(req.body.altura) || 0;
+  const peso = parseFloat(req.body.peso) || 0;
+  const largura = parseFloat(req.body.largura) || 0;
+  const profundidade = parseFloat(req.body.profundidade) || 0;
+
   if (!valorvenda || !valormax || !valormin || !nome || !descricao)
     return res.status(400).json({ error: 'Preencha todos os campos!' });
 
@@ -15,6 +20,10 @@ const addProduct = async (req, res) => {
       valorvenda: valorvenda.toFixed(2),
       valormax: valormax.toFixed(2),
       valormin: valormin.toFixed(2),
+      altura: altura.toFixed(2),
+      peso: peso.toFixed(2),
+      largura: largura.toFixed(2),
+      profundidade: profundidade.toFixed(2),
     };
 
     await knex('produtos').insert(newProduct).returning('*');
@@ -66,26 +75,54 @@ const editProduct = async (req, res) => {
     let valorvenda = parseFloat(req.body.valorvenda);
     let valormin = parseFloat(req.body.valormin);
     let valormax = parseFloat(req.body.valormax);
+    let altura = parseFloat(req.body.altura);
+    let peso = parseFloat(req.body.peso);
+    let largura = parseFloat(req.body.largura);
+    let profundidade = parseFloat(req.body.profundidade);
 
-    if (!valormin && !valormax && !valorvenda && !nome && !descricao)
+    if (
+      !valormin &&
+      !valormax &&
+      !valorvenda &&
+      !nome &&
+      !descricao &&
+      !altura &&
+      !peso &&
+      !largura &&
+      !profundidade
+    )
       return res.status(400).json({ error: 'Nenhuma alteração encontrada!' });
 
-    valorvenda = req.body.valorvenda ? valorvenda : product[0].valorvenda;
-    valormin = req.body.valormin ? valormin : product[0].valormin;
-    valormax = req.body.valormax ? valormax : product[0].valormax;
+    valorvenda = req.body.valorvenda
+      ? parseFloat(valorvenda).toFixed(2)
+      : product[0].valorvenda;
+    valormin = req.body.valormin
+      ? parseFloat(valormin).toFixed(2)
+      : product[0].valormin;
+    valormax = req.body.valormax
+      ? parseFloat(valormax).toFixed(2)
+      : product[0].valormax;
+    altura = req.body.altura
+      ? parseFloat(altura).toFixed(2)
+      : product[0].altura;
+    peso = req.body.peso ? parseFloat(peso).toFixed(2) : product[0].peso;
+    largura = req.body.largura
+      ? parseFloat(largura).toFixed(2)
+      : product[0].largura;
+    profundidade = req.body.profundidade
+      ? parseFloat(profundidade).toFixed(2)
+      : product[0].profundidade;
 
     const data = {
       nome: nome ?? product[0].nome,
       descricao: descricao ?? product[0].descricao,
-      valorvenda: req.body.valorvenda
-        ? parseFloat(valorvenda).toFixed(2)
-        : product[0].valorvenda,
-      valormin: req.body.valormin
-        ? parseFloat(valormin).toFixed(2)
-        : product[0].valormin,
-      valormax: req.body.valormax
-        ? parseFloat(valormax).toFixed(2)
-        : product[0].valormax,
+      valorvenda,
+      valormin,
+      valormax,
+      altura,
+      peso,
+      largura,
+      profundidade,
     };
 
     await knex('produtos').where('id', id).update(data).returning('*');

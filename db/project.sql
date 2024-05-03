@@ -22,10 +22,14 @@ create table usuarios (
   pix text null,
  	srcPerfil text null,
   srcCert text null,
-  status boolean default false,
+  status text default 'inativo',
   totalFat decimal default 0.0,
   valorDispSaque decimal default 0.0,
   cargo_id int not null references cargos(id)
+);
+
+insert into usuarios (nome, cpf, email, telefone, senha, cargo_id) values (
+	'BIODERMIS', '00000000000', 'adminbiodermis@biodermis.com', '00000000000', 'admin123', 1
 );
 
 create table formaspagamento (
@@ -37,17 +41,18 @@ create table pedidos (
 	id serial primary key,
   dataPedido text not null,
   valor decimal not null,
-  valorConsult decimal not null,
+  valorconsult decimal not null,
   valorFrete decimal not null,
   statuspag text default 'aguardando',
   statusentrega text default 'em andamento',
   modelo text not null,
   consultPago boolean default false,
   saldodisp boolean default false,
+  resto decimal default 0.0,
   produtos_ids int array not null,
   formapag_id int not null references formaspagamento(id),
-  consultor_id int not null references usuarios(id),
-  cliente_id int not null references usuarios(id)
+  cliente_id int not null references usuarios(id),
+  consultor_id int not null references usuarios(id)
 );
 
 create table saques (
@@ -72,7 +77,7 @@ create table produtos (
   altura decimal null,
   peso decimal null,
   largura decimal null,
-  produndidade decimal null,
+  profundidade decimal null,
   imagens text array null
 );
 

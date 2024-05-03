@@ -4,37 +4,62 @@ const fs = require('fs');
 
 const addWithdraw = async (req, res) => {
   try {
-    let valorsaque = 0;
-    const pedidos_ids = [];
+    const valorsaque = parseFloat(req.body.valorsaque);
+    if (isNaN(valorsaque))
+      return res.status(400).json({ error: 'Informe o valor para saque!' });
+
+    if (valorsaque > req.userLogged.valordispsaque)
+      return res
+        .status(400)
+        .json({ error: 'Sem valor disponível para saque!' });
+
+    let valortotal = 0;
     const requests = await knex('pedidos')
       .where('consultpago', false)
       .where('consultor_id', req.userLogged.id)
       .where('saldodisp', true);
 
-    requests.forEach(async (request) => {
-      valorsaque += parseFloat(request.valorconsult);
-      pedidos_ids.push(request.id);
+    const requestRest = await knex('pedidos').where('resto', '>', 0);
+    if (requestRest.length > 0) {
+      valortotal = parseFloat(requestRest[0].resto);
+      await knex('pedidos')
+        .update({ resto: 0.0, consultpago: true })
+        .where('id', requestRest[0].id);
+    }
+
+    for (let request of requests) {
+      valortotal += parseFloat(request.valorconsult);
       await knex('pedidos')
         .update({ consultpago: true })
         .where('id', request.id);
-    });
+      if (valortotal > valorsaque) {
+        const resto = valortotal - valorsaque;
+        await knex('pedidos')
+          .update({ consultpago: null, resto: resto.toFixed(2) })
+          .where('id', request.id);
+        break;
+      }
+    }
 
-    const datasaque = dataAtualFormatada();
+    const valordispsaque =
+      parseFloat(req.userLogged.valordispsaque) - valorsaque;
+    await knex('usuarios')
+      .update({
+        valordispsaque: valordispsaque.toFixed(2),
+      })
+      .where('id', req.userLogged.id);
+
+    /* const datasaque = dataAtualFormatada();
     const data = {
       datasaque,
       valorsaque,
-      pedidos_ids,
       consultor_id: req.userLogged.id,
     };
 
-    if (data.valorsaque === 0)
-      return res
-        .status(400)
-        .json({ error: 'Sem valor disponível para saque!' });
-
-    await knex('saques').insert(data);
+    await knex('saques').insert(data); */
     return res.json({ success: 'Saque solicitado com sucesso!' });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };

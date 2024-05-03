@@ -4,13 +4,13 @@ const listConsults = async (req, res) => {
   const { id } = req.params;
   try {
     if (id < 1) {
-      const users = await knex('usuarios').select('*').where('cargo_id', 2);
+      const users = await knex('usuarios').select('*').where('cargo_id', 4);
       return res.status(200).json(users);
     } else {
       const user = await knex('usuarios')
         .select('*')
         .where('id', id)
-        .where('cargo_id', 3);
+        .where('cargo_id', 4);
       if (user.length === 0)
         return res.status(404).json({ error: 'Usuário não encontrado!' });
       return res.status(200).json(user[0]);
@@ -22,10 +22,17 @@ const listConsults = async (req, res) => {
 
 const bloqConsult = async (req, res) => {
   const { id } = req.params;
+  const { opt } = req.body;
+  if (!opt || (opt != 1 && opt != 2 && opt != 3))
+    return res.status(400).json({ error: 'Opção não identificada!' });
+
+  let optText =
+    opt == 1 ? 'Ativo' : opt == 2 ? 'Em aprovação' : opt == 3 ? 'Inativo' : '';
+
   try {
     const user = await knex('usuarios')
       .where('id', id)
-      .update({ inativo: !req.userLogged.inativo })
+      .update({ status: optText })
       .returning('*');
 
     return res.status(200).json({ success: 'Status alterado com sucesso!' });
@@ -65,7 +72,8 @@ const addProductConsult = async (req, res) => {
       });
 
     const valortotal = valorprod;
-    const valorconsult = valorprod - parseFloat(product[0].valormin);
+    let valorconsult = valorprod - parseFloat(product[0].valormin);
+    if (valorconsult === 0) valorconsult = 1;
 
     const newData = {
       produto_id: produto_id,
@@ -89,10 +97,6 @@ const listMyProducts = async (req, res) => {
       .select(['*', 'consultor_produtos.id'])
       .where('consultor_id', req.userLogged.id)
       .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id');
-    if (products.length === 0)
-      return res
-        .status(404)
-        .json({ error: 'Consultor ou produto não encontrado!' });
 
     return res.status(200).json(products);
   } catch (error) {
@@ -133,7 +137,8 @@ const editProductConsult = async (req, res) => {
       });
 
     const valortotal = valorprod;
-    const valorconsult = valorprod - parseFloat(product[0].valormin);
+    let valorconsult = valorprod - parseFloat(product[0].valormin);
+    if (valorconsult === 0) valorconsult = 1;
 
     await knex('consultor_produtos')
       .where('produto_id', id)
