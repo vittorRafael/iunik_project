@@ -14,6 +14,7 @@ const addWithdraw = async (req, res) => {
         .json({ error: 'Sem valor disponível para saque!' });
 
     let valortotal = 0;
+    const pedidos_ids = [];
     const requests = await knex('pedidos')
       .where('consultpago', false)
       .where('consultor_id', req.userLogged.id)
@@ -21,24 +22,36 @@ const addWithdraw = async (req, res) => {
 
     const requestRest = await knex('pedidos').where('resto', '>', 0);
     if (requestRest.length > 0) {
+      pedidos_ids.push(requestRest[0].id);
       valortotal = parseFloat(requestRest[0].resto);
       await knex('pedidos')
         .update({ resto: 0.0, consultpago: true })
         .where('id', requestRest[0].id);
     }
 
-    for (let request of requests) {
-      valortotal += parseFloat(request.valorconsult);
-      await knex('pedidos')
-        .update({ consultpago: true })
-        .where('id', request.id);
-      if (valortotal > valorsaque) {
-        const resto = valortotal - valorsaque;
+    let valorresto = valortotal;
+
+    if (valortotal < valorsaque) {
+      for (let request of requests) {
+        pedidos_ids.push(request.id);
+        valortotal += parseFloat(request.valorconsult);
         await knex('pedidos')
-          .update({ consultpago: null, resto: resto.toFixed(2) })
+          .update({ consultpago: true })
           .where('id', request.id);
-        break;
+        if (valortotal > valorsaque) {
+          const resto = valortotal - valorsaque;
+          await knex('pedidos')
+            .update({ consultpago: null, resto: resto.toFixed(2) })
+            .where('id', request.id);
+          break;
+        }
       }
+    } else {
+      const resto = valortotal - valorsaque;
+      await knex('pedidos')
+        .update({ consultpago: null, resto: resto.toFixed(2) })
+        .where('id', requestRest[0].id);
+      valorresto = parseFloat(resto.toFixed(2));
     }
 
     const valordispsaque =
@@ -49,14 +62,16 @@ const addWithdraw = async (req, res) => {
       })
       .where('id', req.userLogged.id);
 
-    /* const datasaque = dataAtualFormatada();
+    const datasaque = dataAtualFormatada();
     const data = {
       datasaque,
       valorsaque,
+      valorresto,
+      pedidos_ids,
       consultor_id: req.userLogged.id,
     };
 
-    await knex('saques').insert(data); */
+    await knex('saques').insert(data);
     return res.json({ success: 'Saque solicitado com sucesso!' });
   } catch (error) {
     console.log(error);
