@@ -14,22 +14,37 @@ const addWithdraw = async (req, res) => {
         .json({ error: 'Sem valor disponível para saque!' });
 
     let valortotal = 0;
+    let valorresto = 0;
+    let pedido_resto_id = 0;
     const pedidos_ids = [];
     const requests = await knex('pedidos')
       .where('consultpago', false)
       .where('consultor_id', req.userLogged.id)
       .where('saldodisp', true);
 
-    const requestRest = await knex('pedidos').where('resto', '>', 0);
+    const requestRest = await knex('pedidos')
+      .where('resto', '>', 0)
+      .where('consultor_id', req.userLogged.id);
     if (requestRest.length > 0) {
       pedidos_ids.push(requestRest[0].id);
       valortotal = parseFloat(requestRest[0].resto);
       await knex('pedidos')
         .update({ resto: 0.0, consultpago: true })
         .where('id', requestRest[0].id);
+      valorresto = valortotal;
+      pedido_resto_id = requestRest[0].id;
+    } else {
+      if (valorsaque == req.userLogged.valordispsaque) {
+        console.log('entrou aqui 1');
+        for (let request of requests) {
+          pedidos_ids.push(request.id);
+          valortotal += parseFloat(request.valorconsult);
+          await knex('pedidos')
+            .update({ consultpago: true })
+            .where('id', request.id);
+        }
+      }
     }
-
-    let valorresto = valortotal;
 
     if (valortotal < valorsaque) {
       for (let request of requests) {
@@ -47,11 +62,12 @@ const addWithdraw = async (req, res) => {
         }
       }
     } else {
-      const resto = valortotal - valorsaque;
-      await knex('pedidos')
-        .update({ consultpago: null, resto: resto.toFixed(2) })
-        .where('id', requestRest[0].id);
-      valorresto = parseFloat(resto.toFixed(2));
+      if (requestRest.length > 0) {
+        const resto = valortotal - valorsaque;
+        await knex('pedidos')
+          .update({ consultpago: true, resto: resto.toFixed(2) })
+          .where('id', requestRest[0].id);
+      }
     }
 
     const valordispsaque =
@@ -67,6 +83,7 @@ const addWithdraw = async (req, res) => {
       datasaque,
       valorsaque,
       valorresto,
+      pedido_resto_id,
       pedidos_ids,
       consultor_id: req.userLogged.id,
     };
@@ -96,39 +113,6 @@ const listWithdraws = async (req, res) => {
   }
 };
 
-const removeWithdraw = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const withdraw = await knex('saques').where('id', id);
-
-    if (withdraw.length === 0)
-      return res.status(404).json({ error: 'Saque não encontrado!' });
-    if (withdraw[0].status == 'pago')
-      return res.status(400).json({
-        error:
-          'Não é possível excluir o saque, pois o pagamento ja está realizado!',
-      });
-
-    withdraw[0].pedidos_ids.forEach(async (Pedido_id) => {
-      await knex('pedidos')
-        .update({ consultpago: false })
-        .where('id', Pedido_id);
-    });
-
-    const withdrawDeleted = await knex('saques').del().where('id', id);
-    if (withdrawDeleted.rowCount === 0)
-      return res
-        .status(400)
-        .json({ error: 'Não foi possível excluir o saque, tente novamente!' });
-
-    return res
-      .status(200)
-      .json({ success: 'Solicitação do saque excluída com sucesso!' });
-  } catch (error) {
-    return res.status(500).json({ error: 'Erro no servidor!' });
-  }
-};
-
 const addComprov = async (req, res) => {
   const { id } = req.params;
   const file = req.file;
@@ -138,7 +122,7 @@ const addComprov = async (req, res) => {
     }
     await knex('saques')
       .where('id', id)
-      .update({ srccomp: file.path })
+      .update({ srccomp: file.path, status: 'realizado' })
       .returning('*');
     return res.json({ success: 'Comprovante adicionado com sucesso!' });
   } catch (error) {
@@ -158,7 +142,7 @@ const removeComprov = async (req, res) => {
       fs.unlinkSync(withdraws[0].srccomp);
       await knex('saques')
         .where('id', id)
-        .update({ srccomp: null })
+        .update({ srccomp: null, status: 'pendente' })
         .returning('*');
       return res.json({ success: 'Comprovante removido com sucesso!' });
     } else {
@@ -175,7 +159,6 @@ const removeComprov = async (req, res) => {
 module.exports = {
   addWithdraw,
   listWithdraws,
-  removeWithdraw,
   addComprov,
   removeComprov,
 };

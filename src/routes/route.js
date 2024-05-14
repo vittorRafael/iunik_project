@@ -5,6 +5,7 @@ const userRoutes = require('./userRoutes');
 const consultRoutes = require('./consultRoutes');
 const requestsRoutes = require('./requestsRoutes');
 const withdrawRoutes = require('./withdrawRoutes');
+const assessmentsRoutes = require('./assessmentsRoutes');
 const productsRoutes = require('./productsRoutes');
 
 router.use(positionRoutes);
@@ -13,5 +14,6 @@ router.use(consultRoutes);
 router.use(requestsRoutes);
 router.use(productsRoutes);
 router.use(withdrawRoutes);
+router.use(assessmentsRoutes);
 
 module.exports = router;
