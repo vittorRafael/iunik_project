@@ -59,8 +59,11 @@ create table saques (
 	id serial primary key,
   dataSaque text not null,
   valorSaque decimal not null,
+  valorResto decimal not null,
+  pedido_resto_id int not null,
   status text default 'pendente',
   srcComp text null,
+  pedidos_ids int array not null,
   consultor_id int not null references usuarios(id)
 );
 
@@ -92,6 +95,7 @@ create table consultor_produtos(
 create table avaliacoes (
 	id serial primary key,
   comentario text not null,
+  estrelas int not null,
   produto_id int not null references produtos(id)
 );
 

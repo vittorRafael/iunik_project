@@ -18,7 +18,8 @@
     "nodemailer": "^6.9.9",
     "nodemailer-express-handlebars": "^6.1.2",
     "path": "^0.12.7",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.3"

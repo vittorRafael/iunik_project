@@ -1,0 +1,412 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API Biodermis",
+    "description": "Essa API é referente a aplicação BIODERMIS",
+    "contact": {
+      "email": "jvnogueira811@gmail.com"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "API de test"
+    }
+  ],
+  "paths": {
+    "/usuarios": {
+      "post": {
+        "summary": "Cadastro de usuário",
+        "description": "Essa rota será responsável por cadastrar um novo usuário.",
+        "tags": ["Usuarios"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Usuarios"
+              },
+              "examples": {
+                "usuario": {
+                  "value": {
+                    "nome": "Teste Cliente",
+                    "cpf": "00000000001",
+                    "email": "testecliente@gmail.com",
+                    "telefone": "00000000001",
+                    "rua": "Rua 00",
+                    "bairro": "0000",
+                    "estado": "CE",
+                    "cep": "00000000",
+                    "cidade": "Fortaleza",
+                    "agencia": "0000-0",
+                    "conta": "00000-0",
+                    "pix": "00000000001",
+                    "senha": "teste123",
+                    "cargo_id": 4
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": {
+            "description": "Usuário cadastrado com sucesso!"
+          }
+        }
+      }
+    },
+    "/usuarios/{id}": {
+      "get": {
+        "summary": "Listar usuários",
+        "description": "Essa rota será responsável por listar um ou mais usuários.",
+        "tags": ["Usuarios"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do usuário para busca, caso queira todos enviar 0",
+            "required": true
+          }
+        ],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "Entrar",
+        "description": "Essa rota será responsável por autenticar o usuário.",
+        "tags": ["Usuarios"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "login": {
+                  "value": {
+                    "email": "teste@gmail.com",
+                    "senha": "teste"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/esqueceu_senha": {
+      "post": {
+        "summary": "Esqueceu a senha",
+        "description": "Essa rota será responsável por recuperar a senha do usuário.",
+        "tags": ["Usuarios"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "login": {
+                  "value": {
+                    "email": "teste@gmail.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/alterar_senha": {
+      "post": {
+        "summary": "Alterar a senha",
+        "description": "Essa rota será responsável por alterar a senha esquecida do usuário.",
+        "tags": ["Usuarios"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "login": {
+                  "value": {
+                    "email": "teste@gmail.com",
+                    "token": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a",
+                    "senha": "teste"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/perfil": {
+      "get": {
+        "summary": "Obter perfil do usuário",
+        "description": "Essa rota será responsável por listar um ou mais usuários.",
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["Usuarios"],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      },
+      "patch": {
+        "summary": "Editar usuário logado",
+        "description": "Essa rota será responsável por editar dados do usuário logado.",
+        "tags": ["Usuarios"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Usuarios"
+              },
+              "examples": {
+                "usuario": {
+                  "value": {
+                    "nome": "Teste Cliente",
+                    "cpf": "00000000001",
+                    "email": "testecliente@gmail.com",
+                    "telefone": "00000000001",
+                    "rua": "Rua 00",
+                    "bairro": "0000",
+                    "estado": "CE",
+                    "cep": "00000000",
+                    "cidade": "Fortaleza",
+                    "agencia": "0000-0",
+                    "conta": "00000-0",
+                    "pix": "00000000001",
+                    "senha": "teste123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": {
+            "description": "Usuário cadastrado com sucesso!"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletar perfil do usuário logado",
+        "description": "Essa rota será responsável por deletar o usuário que está logado.",
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["Usuarios"],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/perfil/foto": {
+      "post": {
+        "summary": "Adicionar foto ao perfil do usuário logado",
+        "description": "Essa rota será responsável por adicionar ou alterar foto do perfil do usuário logado.",
+        "tags": ["Usuarios"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      },
+      "delete": {
+        "summary": "Deletar foto do perfil do usuário logado",
+        "description": "Essa rota será responsável por deletar a foto do perfil do usuário que está logado.",
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["Usuarios"],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/perfil/certificado": {
+      "post": {
+        "summary": "Adicionar certificado ao perfil do usuário logado",
+        "description": "Essa rota será responsável por adicionar ou alterar certificado do perfil do usuário logado.",
+        "tags": ["Usuarios"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      },
+      "delete": {
+        "summary": "Deletar certificado do perfil do usuário logado",
+        "description": "Essa rota será responsável por deletar a certificado do perfil do usuário que está logado.",
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["Usuarios"],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Usuarios": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "cpf": {
+            "type": "string",
+            "description": "Terá que ser único, caso já exista usuário com campo cadastrado, irá dar erro!"
+          },
+          "email": {
+            "type": "string",
+            "description": "Terá que ser único, caso já exista usuário com campo cadastrado, irá dar erro!"
+          },
+          "telefone": {
+            "type": "string"
+          },
+          "rua": {
+            "type": "string"
+          },
+          "bairro": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "cep": {
+            "type": "string"
+          },
+          "cidade": {
+            "type": "string"
+          },
+          "agencia": {
+            "type": "string"
+          },
+          "conta": {
+            "type": "string"
+          },
+          "pix": {
+            "type": "string"
+          },
+          "senha": {
+            "type": "string"
+          },
+          "cargo_id": {
+            "type": "number",
+            "description": "O número enviado deverá ser correspondente ao id da tabela cargos"
+          }
+        }
+      },
+      "Produtos": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "descricao": {
+            "type": "string"
+          },
+          "valorMin": {
+            "type": "string",
+            "description": "Valor Mínimo do produto!"
+          },
+          "valorMax": {
+            "type": "string",
+            "description": "Valor Máximo do produto!"
+          },
+          "valorVenda": {
+            "type": "string",
+            "description": "Valor de venda do produto pela biodermis!"
+          },
+          "altura": {
+            "type": "string"
+          },
+          "peso": {
+            "type": "string"
+          },
+          "largura": {
+            "type": "string"
+          },
+          "profundidade": {
+            "type": "string"
+          },
+          "imagens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

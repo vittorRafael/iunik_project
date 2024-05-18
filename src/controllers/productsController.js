@@ -1,4 +1,5 @@
 const knex = require('../config/connect');
+const fs = require('fs');
 
 const addProduct = async (req, res) => {
   const { nome, descricao } = req.body;
@@ -151,10 +152,89 @@ const removeProduct = async (req, res) => {
   }
 };
 
+const addImgProd = async (req, res) => {
+  const { id } = req.params;
+  const files = req.files;
+  try {
+    const product = await knex('produtos').where('id', id);
+    if (product.length === 0)
+      return res.status(404).json({ error: 'Produto não encontrado!' });
+
+    if (files.length === 0)
+      return res
+        .status(400)
+        .json({ error: 'Nenhuma imagem enviada, tente novamente!' });
+
+    const imagesPath = product[0].imagens || [];
+    files.forEach((file) => {
+      imagesPath.push(file.path);
+    });
+
+    await knex('produtos')
+      .where('id', id)
+      .update({ imagens: imagesPath })
+      .returning('*');
+    return res.json({ success: 'Imagens adicionadas com sucesso!' });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: 'Erro no servidor!' });
+  }
+};
+
+const removeImgProd = async (req, res) => {
+  const { id } = req.params;
+  const { imagens } = req.body;
+  let cancela = false;
+  try {
+    const product = await knex('produtos').where('id', id);
+    if (product.length === 0)
+      return res.status(404).json({ error: 'Produto não encontrado!' });
+
+    const imagesPath = product[0].imagens;
+    imagens.forEach((img) => {
+      if (img > imagesPath.length) cancela = true;
+    });
+    if (cancela)
+      return res.status(404).json({ error: `Imagem não encontrada! ` });
+
+    if (imagesPath.length > 0) {
+      if (imagens.length > 0) {
+        imagens.forEach((img) => {
+          fs.unlinkSync(imagesPath[img]);
+          imagesPath.splice(img, 1);
+        });
+      } else {
+        console.log('entrou aqui');
+        imagesPath.forEach((img, indice) => {
+          fs.unlinkSync(img);
+        });
+        imagesPath.splice(0, imagesPath.length);
+        console.log(imagesPath);
+      }
+
+      await knex('produtos')
+        .where('id', id)
+        .update({ imagens: imagesPath })
+        .returning('*');
+
+      return res.json({ success: 'Imagens excluídas com sucesso!' });
+    } else {
+      return res
+        .status(400)
+        .json({ error: 'Imagens não excluídas, produto sem fotos!' });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: 'Erro no servidor!' });
+  }
+};
+
 module.exports = {
   addProduct,
   listProducts,
   editProduct,
   removeProduct,
   listProductsConsult,
+  addImgProd,
+  removeImgProd,
 };

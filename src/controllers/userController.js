@@ -101,12 +101,10 @@ const updateProfile = async (req, res) => {
     agencia,
     conta,
     pix,
-    cargo_id,
   } = req.body;
   if (
     !nome &&
     !email &&
-    !cargo_id &&
     !cpf &&
     !rua &&
     !bairro &&
@@ -149,7 +147,7 @@ const updateProfile = async (req, res) => {
     const data = {
       nome: nome || userAtual.nome,
       email: email || userAtual.email,
-      cargo_id: cargo_id || userAtual.cargo_id,
+      cargo_id: userAtual.cargo_id,
       cpf: cpfValid || userAtual.cpf,
       telefone: telefoneValid || userAtual.telefone,
       rua: rua || userAtual.rua,
@@ -192,6 +190,14 @@ const deleteProfile = async (req, res) => {
         .status(400)
         .json({ error: 'Não foi possível excluir o Pedido, tente novamente!' });
 
+    const withdrawDeleted = await knex('saques')
+      .del()
+      .where('consultor_id', id);
+    if (withdrawDeleted.rowCount === 0)
+      return res
+        .status(400)
+        .json({ error: 'Não foi possível excluir o Saque, tente novamente!' });
+
     const userDeleted = await knex('usuarios').del().where('id', id);
     if (userDeleted === 0)
       return res.status(404).json({ error: 'Usuário não encontrado!' });
@@ -226,6 +232,10 @@ const addImg = async (req, res) => {
   const { id } = req.userLogged;
   const file = req.file;
   try {
+    if (!file)
+      return res
+        .status(400)
+        .json({ error: 'Nenhuma imagem enviada, tente novamente!' });
     if (req.userLogged.srcperfil) {
       fs.unlinkSync(req.userLogged.srcperfil);
     }
@@ -235,6 +245,7 @@ const addImg = async (req, res) => {
       .returning('*');
     return res.json({ success: 'Imagem adicionada com sucesso!' });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -263,6 +274,10 @@ const addCert = async (req, res) => {
   const { id } = req.userLogged;
   const file = req.file;
   try {
+    if (!file)
+      return res
+        .status(400)
+        .json({ error: 'Nenhum arquivo enviado, tente novamente!' });
     if (req.userLogged.srccert) {
       fs.unlinkSync(req.userLogged.srccert);
     }
@@ -272,6 +287,7 @@ const addCert = async (req, res) => {
       .returning('*');
     return res.json({ success: 'Certificado adicionado com sucesso!' });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
