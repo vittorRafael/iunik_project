@@ -204,12 +204,10 @@ const removeImgProd = async (req, res) => {
           imagesPath.splice(img, 1);
         });
       } else {
-        console.log('entrou aqui');
         imagesPath.forEach((img, indice) => {
           fs.unlinkSync(img);
         });
         imagesPath.splice(0, imagesPath.length);
-        console.log(imagesPath);
       }
 
       await knex('produtos')
