@@ -204,10 +204,9 @@ const removeImgProd = async (req, res) => {
           imagesPath.splice(img, 1);
         });
       } else {
-        imagesPath.forEach((img, indice) => {
-          fs.unlinkSync(img);
-        });
-        imagesPath.splice(0, imagesPath.length);
+        return res
+          .status(400)
+          .json({ error: 'Informe quais imagens para deletar!' });
       }
 
       await knex('produtos')

@@ -28,14 +28,19 @@ const addRequest = async (req, res) => {
   let valorconsult = 0;
   let valor = 0;
 
-  if (!formapag_id || !produtos_ids || !modelo)
+  if (!produtos_ids || !modelo)
     return res.status(400).json({ error: 'Preencha todos os campos!' });
   try {
-    const existFormPag = await knex('formaspagamento').where('id', formapag_id);
-    if (existFormPag.length === 0)
-      return res
-        .status(400)
-        .json({ error: 'Forma de pagamento inválida, tente novamente!' });
+    if (formapag_id) {
+      const existFormPag = await knex('formaspagamento').where(
+        'id',
+        formapag_id,
+      );
+      if (existFormPag.length === 0)
+        return res
+          .status(400)
+          .json({ error: 'Forma de pagamento inválida, tente novamente!' });
+    }
 
     const existConsult = await knex('usuarios')
       .where('id', user_id)
@@ -68,11 +73,10 @@ const addRequest = async (req, res) => {
 
       const products = await knex('consultor_produtos')
         .select(['*', 'consultor_produtos.id'])
-        .whereIn('produto_id', produtos_ids)
+        .whereIn('consultor_produtos.produto_id', produtos_ids)
         .where('produtos.inativo', false)
-        .where('consultor_id', consultor_id)
+        .where('consultor_produtos.consultor_id', consultor_id)
         .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id');
-
       if (products.length !== produtos_ids.length)
         return res
           .status(400)
