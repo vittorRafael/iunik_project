@@ -73,7 +73,7 @@ const updateAssessments = async (req, res) => {
     if (assessment.length === 0)
       return res.status(404).json({ error: 'Avaliação não encontrada!' });
 
-    if (comentario.length === 0)
+    if (comentario && comentario.length === 0)
       return res.status(400).json({ error: 'A Avaliação não pode ser vazia!' });
 
     if (estrelas < 1 || estrelas > 5)
@@ -81,7 +81,12 @@ const updateAssessments = async (req, res) => {
         .status(400)
         .json({ error: 'Quantidade de estrelas inválida!' });
 
-    await knex('avaliacoes').update({ comentario, estrelas }).where('id', id);
+    await knex('avaliacoes')
+      .update({
+        comentario,
+        estrelas: isNaN(estrelas) ? assessment[0].estrelas : estrelas,
+      })
+      .where('id', id);
 
     const assessments = await knex('avaliacoes')
       .select('*')

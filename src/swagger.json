@@ -503,6 +503,85 @@
           "200": { "description": "OK" }
         }
       }
+    },
+    "/comentarios/{id}": {
+      "get": {
+        "summary": "Listar comentarios",
+        "description": "Essa rota será responsável por listar um ou mais comentarios de um produto.",
+        "tags": ["Comentarios"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do produto para mostrar seus comentários.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      },
+      "patch": {
+        "summary": "Editar comentario",
+        "description": "Essa rota será responsável por editar dados de um comentario pelo ID.",
+        "tags": ["Comentarios"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do comentario para edição.",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Comentarios"
+              },
+              "examples": {
+                "comentario": {
+                  "value": {
+                    "comentario": "Produto ótimo!",
+                    "estrelas": 5
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": {
+            "description": "Comentário atualizado com sucesso!"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletar comentário",
+        "description": "Essa rota será responsável por deletar o comentário pelo ID.",
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["Comentarios"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do comentario para excluí-lo.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
     }
   },
   "components": {
@@ -595,6 +674,21 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "Comentarios": {
+        "type": "object",
+        "properties": {
+          "comentario": {
+            "type": "string"
+          },
+          "estrelas": {
+            "type": "number"
+          },
+          "produto_id": {
+            "type": "number",
+            "description": "ID do produto que esta sendo avaliado!"
           }
         }
       }
