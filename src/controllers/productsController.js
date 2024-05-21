@@ -190,10 +190,12 @@ const removeImgProd = async (req, res) => {
     if (product.length === 0)
       return res.status(404).json({ error: 'Produto não encontrado!' });
 
-    const imagesPath = product[0].imagens;
+    const imagesPath = [...product[0].imagens];
+    const imagesDeleted = [];
     imagens.forEach((img) => {
-      if (img > imagesPath.length) cancela = true;
+      if (img > imagesPath.length - 1) cancela = true;
     });
+
     if (cancela)
       return res.status(404).json({ error: `Imagem não encontrada! ` });
 
@@ -201,7 +203,7 @@ const removeImgProd = async (req, res) => {
       if (imagens.length > 0) {
         imagens.forEach((img) => {
           fs.unlinkSync(imagesPath[img]);
-          imagesPath.splice(img, 1);
+          imagesDeleted.push(imagesPath[img]);
         });
       } else {
         return res
@@ -209,9 +211,11 @@ const removeImgProd = async (req, res) => {
           .json({ error: 'Informe quais imagens para deletar!' });
       }
 
+      const data = imagesPath.filter((image) => !imagesDeleted.includes(image));
+
       await knex('produtos')
         .where('id', id)
-        .update({ imagens: imagesPath })
+        .update({ imagens: data })
         .returning('*');
 
       return res.json({ success: 'Imagens excluídas com sucesso!' });

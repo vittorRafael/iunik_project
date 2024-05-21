@@ -68,7 +68,7 @@
           {
             "name": "id",
             "in": "path",
-            "description": "Id do usuário para busca, caso queira todos enviar 0",
+            "description": "Id do usuário para busca, caso queira todos usuários enviar 0",
             "required": true
           }
         ],
@@ -210,7 +210,7 @@
           "404": { "description": "Não Encontrado!" },
           "500": { "description": "Erro no servidor!" },
           "200": {
-            "description": "Usuário cadastrado com sucesso!"
+            "description": "Usuário atualizado com sucesso!"
           }
         }
       },
@@ -299,6 +299,204 @@
         "description": "Essa rota será responsável por deletar a certificado do perfil do usuário que está logado.",
         "security": [{ "bearerAuth": [] }],
         "tags": ["Usuarios"],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/produtos": {
+      "post": {
+        "summary": "Cadastro de produtos",
+        "description": "Essa rota será responsável por cadastrar um novo produto.",
+        "tags": ["Produtos"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Produtos"
+              },
+              "examples": {
+                "produto": {
+                  "value": {
+                    "nome": "Teclado Mecânico",
+                    "descricao": "Teclado Mecânico da Marca X, leve, etc.",
+                    "valormin": 99.99,
+                    "valormax": 299.99,
+                    "valorvenda": 199.99,
+                    "altura": 10,
+                    "peso": 170,
+                    "largura": 100,
+                    "profundidade": 40
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": {
+            "description": "Produto cadastrado com sucesso!"
+          }
+        }
+      }
+    },
+    "/produtos/{id}": {
+      "get": {
+        "summary": "Listar produtos",
+        "description": "Essa rota será responsável por listar um ou mais produtos.",
+        "tags": ["Produtos"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do produto para busca, caso queira todos os produtos enviar 0",
+            "required": true
+          }
+        ],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      },
+      "patch": {
+        "summary": "Editar produto",
+        "description": "Essa rota será responsável por editar dados de um produto pelo ID.",
+        "tags": ["Produtos"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do produto para edição.",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Produtos"
+              },
+              "examples": {
+                "produto": {
+                  "value": {
+                    "nome": "Teclado Mecânico",
+                    "descricao": "Teclado Mecânico da Marca X, leve, etc.",
+                    "valormin": 99.99,
+                    "valormax": 299.99,
+                    "valorvenda": 199.99,
+                    "altura": 10,
+                    "peso": 170,
+                    "largura": 100,
+                    "profundidade": 40
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": {
+            "description": "Produto atualizado com sucesso!"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletar produto",
+        "description": "Essa rota será responsável por deletar o produto pelo ID.",
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["Produtos"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do produto para excluí-lo.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/produtos/fotos/{id}": {
+      "post": {
+        "summary": "Adicionar fotos ao produtos",
+        "description": "Essa rota será responsável por adicionar fotos ao produto pelo ID.",
+        "tags": ["Produtos"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do produto para adicionar suas imagens",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      },
+      "delete": {
+        "summary": "Deletar fotos do produto",
+        "description": "Essa rota será responsável por deletar as fotos do produto pelo ID.",
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["Produtos"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do produto para remover suas imagens",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "Imagens": {
+                  "value": {
+                    "imagens": [0]
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "404": { "description": "Não Encontrado!" },
           "500": { "description": "Erro no servidor!" },
