@@ -22,7 +22,7 @@ app.get('/uploads/:folder/:imageName', (req, res) => {
   // Verifique se o arquivo existe
   fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {
-      return res.status(404).send('Imagem não encontrada');
+      return res.status(404).json({ error: 'Imagem não encontrada' });
     }
 
     // Envie o arquivo como resposta
