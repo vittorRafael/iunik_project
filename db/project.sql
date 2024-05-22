@@ -50,7 +50,7 @@ create table pedidos (
   saldodisp boolean default false,
   resto decimal default 0.0,
   produtos_ids int array not null,
-  formapag_id int not null references formaspagamento(id),
+  formapag_id int null references formaspagamento(id),
   cliente_id int not null references usuarios(id),
   consultor_id int not null references usuarios(id)
 );
