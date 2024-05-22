@@ -924,6 +924,115 @@
           "200": { "description": "OK" }
         }
       }
+    },
+    "/saques": {
+      "post": {
+        "summary": "Cadastro de saque",
+        "description": "Essa rota será responsável por cadastrar uma nova solicitação de saque.",
+        "tags": ["Saques"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Saques"
+              },
+              "examples": {
+                "produto": {
+                  "value": {
+                    "valorsaque": 20
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": {
+            "description": "Saque cadastrado com sucesso!"
+          }
+        }
+      }
+    },
+    "/saques/{id}": {
+      "get": {
+        "summary": "Listar saques",
+        "description": "Essa rota será responsável por listar um ou mais saques.",
+        "tags": ["Saques"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do saque para busca, caso queira todos os saques enviar 0",
+            "required": true
+          }
+        ],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/saques/comprovante/{id}": {
+      "post": {
+        "summary": "Adicionar comprovante ao saque",
+        "description": "Essa rota será responsável por adicionar comprovante de pagamento ao saque solicitado.",
+        "tags": ["Saques"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do saque para adicionar o comprovante.",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      },
+      "delete": {
+        "summary": "Deletar comprovante do saque",
+        "description": "Essa rota será responsável por deletar o comprovante do saque solicitado.",
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["Saques"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do saque para remover o comprovante.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
     }
   },
   "components": {
@@ -1058,6 +1167,15 @@
           },
           "modelo": {
             "type": "string"
+          }
+        }
+      },
+      "Saques": {
+        "type": "object",
+        "properties": {
+          "valorsaque": {
+            "type": "number",
+            "description": "O valor do saque deve ser igual ou menor que o valor disponível para saque."
           }
         }
       }

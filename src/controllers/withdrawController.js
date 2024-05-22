@@ -117,8 +117,11 @@ const addComprov = async (req, res) => {
   const { id } = req.params;
   const file = req.file;
   try {
-    if (req.userLogged.srcperfil) {
-      fs.unlinkSync(req.userLogged.srcperfil);
+    const withdraw = await knex('saques').select('*').where('id', id);
+    if (withdraw.length === 0)
+      return res.status(404).json({ error: 'Saque não encontrado!' });
+    if (withdraw[0].srccomp) {
+      fs.unlinkSync(withdraw[0].srccomp);
     }
     await knex('saques')
       .where('id', id)
