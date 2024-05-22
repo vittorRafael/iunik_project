@@ -117,9 +117,6 @@ const editRequest = async (req, res) => {
     const request = await knex('pedidos').where('id', id);
     if (request.length === 0)
       return res.status(404).json({ error: 'Pedido não encontrado!' });
-    const valorfrete = req.body.valorfrete
-      ? parseFloat(req.body.valorfrete).toFixed(2)
-      : request[0].valorfrete;
     const { statuspag, statusentrega } = req.body;
     if (!statusentrega && !statuspag)
       return res.status(400).json({ error: 'Nenhuma alteração encontrada!' });
@@ -127,7 +124,6 @@ const editRequest = async (req, res) => {
     const data = {
       statusentrega,
       statuspag,
-      valorfrete,
     };
 
     await knex('pedidos').where('id', id).update(data).returning('*');
@@ -145,7 +141,8 @@ const removeRequest = async (req, res) => {
     const requestDeleted = await knex('pedidos')
       .del()
       .where('id', id)
-      .where({ saldodisp: false });
+      .where({ saldodisp: false })
+      .where({ consultpago: false });
     if (requestDeleted === 0)
       return res.status(404).json({
         error: 'Pedido não encontrado ou pagamento já foi realizado!',
@@ -210,7 +207,7 @@ const balanceAvailable = async (req, res) => {
 };
 
 const getBalance = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.userLogged;
   try {
     const requestsSaldo = await knex('pedidos')
       .where('consultpago', false)

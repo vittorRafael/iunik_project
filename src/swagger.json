@@ -505,6 +505,45 @@
       }
     },
     "/comentarios/{id}": {
+      "post": {
+        "summary": "Adicionar comentario a um produto",
+        "description": "Essa rota será responsável por adicionar um novo comentario ao produto.",
+        "tags": ["Comentarios"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do produto para receber o comentário.",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Comentarios"
+              },
+              "examples": {
+                "comentario": {
+                  "value": {
+                    "comentario": "Produto ótimo!",
+                    "estrelas": 5
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": {
+            "description": "Produto cadastrado com sucesso!"
+          }
+        }
+      },
       "get": {
         "summary": "Listar comentarios",
         "description": "Essa rota será responsável por listar um ou mais comentarios de um produto.",
@@ -582,6 +621,309 @@
           "200": { "description": "OK" }
         }
       }
+    },
+    "/consultores/{id}": {
+      "get": {
+        "summary": "Listar consultores",
+        "description": "Essa rota será responsável por listar um ou mais consultores.",
+        "tags": ["Consultores"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do usuário para mostrar seus dados, caso queira todos os consultores digitar 0.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      },
+      "patch": {
+        "summary": "Status consultor",
+        "description": "Essa rota será responsável por mudar o status de um consultor pelo ID.",
+        "tags": ["Consultores"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do usuário para alterar seu status de consultor.",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "consultor": {
+                  "value": {
+                    "opt": 2
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": {
+            "description": "Comentário atualizado com sucesso!"
+          }
+        }
+      }
+    },
+    "/consultor/produtos": {
+      "get": {
+        "summary": "Listar produtos do consultor",
+        "description": "Essa rota será responsável por listar produtos do consultor logado.",
+        "tags": ["Consultores"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/consultor/produtos/{id}": {
+      "post": {
+        "summary": "Adicionar produto na lista do consultor",
+        "description": "Essa rota será responsável por adicionar um novo produto a lista do consultor logado.",
+        "tags": ["Consultores"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do produto que irá ser adicionado a lista.",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Produtos_Consultor"
+              },
+              "examples": {
+                "produto_consultor": {
+                  "value": {
+                    "valorprod": 900
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": {
+            "description": "Produto cadastrado com sucesso!"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Editar produto do consultor",
+        "description": "Essa rota será responsável por editar valor do produto de um consultor pelo ID.",
+        "tags": ["Consultores"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do produto para edição.",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Produtos_Consultor"
+              },
+              "examples": {
+                "produto_consultor": {
+                  "value": {
+                    "valorprod": 900
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": {
+            "description": "Comentário atualizado com sucesso!"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletar produto do consultor",
+        "description": "Essa rota será responsável por deletar o produto do consultor pelo ID.",
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["Consultores"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do produto para excluí-lo.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/pedidos": {
+      "post": {
+        "summary": "Cadastro de pedidos",
+        "description": "Essa rota será responsável por cadastrar um novo pedido.",
+        "tags": ["Pedidos"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Pedidos"
+              },
+              "examples": {
+                "produto": {
+                  "value": {
+                    "produtos_ids": [1],
+                    "valorfrete": 20,
+                    "modelo": "venda"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": {
+            "description": "Pedido cadastrado com sucesso!"
+          }
+        }
+      }
+    },
+    "/pedidos/{id}": {
+      "get": {
+        "summary": "Listar pedidos",
+        "description": "Essa rota será responsável por listar um ou mais pedidos.",
+        "tags": ["Pedidos"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do pedido para busca, caso queira todos os pedidos enviar 0",
+            "required": true
+          }
+        ],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      },
+      "patch": {
+        "summary": "Editar pedido",
+        "description": "Essa rota será responsável por editar status de pagamento e de entrega de um pedido pelo ID.",
+        "tags": ["Pedidos"],
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do pedido para edição.",
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Pedidos"
+              },
+              "examples": {
+                "produto": {
+                  "value": {
+                    "statuspag": "realizado",
+                    "statusentrega": "realizada"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": {
+            "description": "Pedido atualizado com sucesso!"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletar pedido",
+        "description": "Essa rota será responsável por deletar o pedido pelo ID.",
+        "security": [{ "bearerAuth": [] }],
+        "tags": ["Pedidos"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Id do pedido para excluí-lo.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/saldodisp": {
+      "post": {
+        "summary": "Atualizar dados",
+        "description": "Essa rota será responsável por atualizar os dados dos pedidos, onde após a quantidade de dias e dependendo da forma de pagamento irá liberar o saldo do pedido para o consultor realizar o saque.",
+        "tags": ["Pedidos"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      },
+      "get": {
+        "summary": "Pegar saldo disponivel",
+        "description": "Essa rota será responsável por pegar saldo disponivel do consultor logado.",
+        "tags": ["Pedidos"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
     }
   },
   "components": {
@@ -646,28 +988,28 @@
             "type": "string"
           },
           "valorMin": {
-            "type": "string",
+            "type": "number",
             "description": "Valor Mínimo do produto!"
           },
           "valorMax": {
-            "type": "string",
+            "type": "number",
             "description": "Valor Máximo do produto!"
           },
           "valorVenda": {
-            "type": "string",
+            "type": "number",
             "description": "Valor de venda do produto pela biodermis!"
           },
           "altura": {
-            "type": "string"
+            "type": "number"
           },
           "peso": {
-            "type": "string"
+            "type": "number"
           },
           "largura": {
-            "type": "string"
+            "type": "number"
           },
           "profundidade": {
-            "type": "string"
+            "type": "number"
           },
           "imagens": {
             "type": "array",
@@ -689,6 +1031,33 @@
           "produto_id": {
             "type": "number",
             "description": "ID do produto que esta sendo avaliado!"
+          }
+        }
+      },
+      "Produtos_Consultor": {
+        "type": "object",
+        "properties": {
+          "valorprod": {
+            "type": "number",
+            "description": "Valor do produto, esse valor não pode ser menor que o valor minimo do produto, nem maior que o valor máximo. O valor do consultor será o valor escolhido menos o valor mínimo. Caso o valor mínimo seja o digitado, o valor do consultor será 1."
+          }
+        }
+      },
+      "Pedidos": {
+        "type": "object",
+        "properties": {
+          "produtos_ids": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "description": "Array com ID's dos produtos que irão ser adicionados no pedido. OBS: Caso seja cliente logado, os produtos irão pelo valorVenda. Caso seja consultor, os produtos precisam estar cadastrados na lista do consultor e consequentemente irá pelo valorConsult."
+            }
+          },
+          "valorfrete": {
+            "type": "number"
+          },
+          "modelo": {
+            "type": "string"
           }
         }
       }

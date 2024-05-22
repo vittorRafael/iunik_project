@@ -8,6 +8,6 @@ router.patch('/pedidos/:id', requestsController.editRequest);
 router.delete('/pedidos/:id', requestsController.removeRequest);
 
 router.post('/saldodisp', requestsController.balanceAvailable);
-router.get('/saldodisp/:id', requestsController.getBalance);
+router.get('/saldodisp', requestsController.getBalance);
 
 module.exports = router;
