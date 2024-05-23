@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express();
 const positionRoutes = require('./positionRoutes');
+const categoryRoutes = require('./categoryRoutes');
 const userRoutes = require('./userRoutes');
 const consultRoutes = require('./consultRoutes');
 const requestsRoutes = require('./requestsRoutes');
@@ -9,6 +10,7 @@ const assessmentsRoutes = require('./assessmentsRoutes');
 const productsRoutes = require('./productsRoutes');
 
 router.use(positionRoutes);
+router.use(categoryRoutes);
 router.use(userRoutes);
 router.use(consultRoutes);
 router.use(requestsRoutes);

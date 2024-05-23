@@ -329,7 +329,8 @@
                     "altura": 10,
                     "peso": 170,
                     "largura": 100,
-                    "profundidade": 40
+                    "profundidade": 40,
+                    "categoria_id": 1
                   }
                 }
               }
@@ -396,7 +397,8 @@
                     "altura": 10,
                     "peso": 170,
                     "largura": 100,
-                    "profundidade": 40
+                    "profundidade": 40,
+                    "categoria_id": 1
                   }
                 }
               }
@@ -1125,6 +1127,10 @@
             "items": {
               "type": "string"
             }
+          },
+          "categoria_id": {
+            "type": "number",
+            "description": "Id da tabela categoria"
           }
         }
       },

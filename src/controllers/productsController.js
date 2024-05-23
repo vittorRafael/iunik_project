@@ -2,7 +2,7 @@ const knex = require('../config/connect');
 const fs = require('fs');
 
 const addProduct = async (req, res) => {
-  const { nome, descricao } = req.body;
+  const { nome, descricao, categoria_id } = req.body;
   const valorvenda = parseFloat(req.body.valorvenda);
   const valormin = parseFloat(req.body.valormin);
   const valormax = parseFloat(req.body.valormax);
@@ -11,10 +11,20 @@ const addProduct = async (req, res) => {
   const largura = parseFloat(req.body.largura) || 0;
   const profundidade = parseFloat(req.body.profundidade) || 0;
 
-  if (!valorvenda || !valormax || !valormin || !nome || !descricao)
+  if (
+    !valorvenda ||
+    !valormax ||
+    !valormin ||
+    !nome ||
+    !descricao ||
+    !categoria_id
+  )
     return res.status(400).json({ error: 'Preencha todos os campos!' });
 
   try {
+    const category = await knex('categorias').where('id', categoria_id);
+    if (category.length === 0)
+      return res.status(404).json({ error: 'Categoria não encontrada!' });
     const newProduct = {
       nome,
       descricao,
@@ -25,6 +35,7 @@ const addProduct = async (req, res) => {
       peso: peso.toFixed(2),
       largura: largura.toFixed(2),
       profundidade: profundidade.toFixed(2),
+      categoria_id,
     };
 
     await knex('produtos').insert(newProduct).returning('*');
@@ -72,7 +83,7 @@ const editProduct = async (req, res) => {
     if (product.length === 0)
       return res.status(404).json({ error: 'Produto não encontrado!' });
 
-    const { nome, descricao } = req.body;
+    const { nome, descricao, categoria_id } = req.body;
     let valorvenda = parseFloat(req.body.valorvenda);
     let valormin = parseFloat(req.body.valormin);
     let valormax = parseFloat(req.body.valormax);
@@ -90,9 +101,16 @@ const editProduct = async (req, res) => {
       !altura &&
       !peso &&
       !largura &&
-      !profundidade
+      !profundidade &&
+      !categoria_id
     )
       return res.status(400).json({ error: 'Nenhuma alteração encontrada!' });
+
+    if (categoria_id) {
+      const category = await knex('categorias').where('id', categoria_id);
+      if (category.length === 0)
+        return res.status(404).json({ error: 'Categoria não encontrada!' });
+    }
 
     valorvenda = req.body.valorvenda
       ? parseFloat(valorvenda).toFixed(2)
@@ -124,6 +142,7 @@ const editProduct = async (req, res) => {
       peso,
       largura,
       profundidade,
+      categoria_id: categoria_id ?? product[0].categoria_id,
     };
 
     await knex('produtos').where('id', id).update(data).returning('*');
@@ -138,9 +157,22 @@ const removeProduct = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const productDeleted = await knex('produtos').del().where('id', id);
-    if (productDeleted === 0)
+    const product = await knex('produtos').where('id', id);
+    if (product.length === 0)
       return res.status(404).json({ error: 'Produto não encontrado!' });
+
+    const productConsultDeleted = await knex('consultor_produtos')
+      .del()
+      .where('produto_id', id);
+
+    const assessmentsDeleted = await knex('avaliacoes')
+      .del()
+      .where('produto_id', id);
+
+    console.log(productConsultDeleted);
+    console.log(assessmentsDeleted);
+
+    const productDeleted = await knex('produtos').del().where('id', id);
     if (productDeleted.rowCount === 0)
       return res.status(400).json({
         error: 'Não foi possível excluir o Produto, tente novamente!',
@@ -148,6 +180,7 @@ const removeProduct = async (req, res) => {
 
     return res.status(200).json({ success: 'Produto excluído com sucesso!' });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
