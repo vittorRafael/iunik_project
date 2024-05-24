@@ -123,6 +123,19 @@ const addComprov = async (req, res) => {
     if (withdraw[0].srccomp) {
       fs.unlinkSync(withdraw[0].srccomp);
     }
+
+    const moviments = await knex('movimentacoes')
+      .select('*')
+      .where('saque_id', id);
+    if (moviments.length === 0) {
+      const moviment = {
+        tipo: 'saída',
+        valor: withdraw[0].valorsaque,
+        saque_id: id,
+      };
+      await knex('movimentacoes').insert(moviment);
+    }
+
     await knex('saques')
       .where('id', id)
       .update({ srccomp: file.path, status: 'realizado' })

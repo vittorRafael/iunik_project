@@ -121,6 +121,20 @@ const editRequest = async (req, res) => {
     if (!statusentrega && !statuspag)
       return res.status(400).json({ error: 'Nenhuma alteração encontrada!' });
 
+    if (statuspag) {
+      const moviments = await knex('movimentacoes')
+        .select('*')
+        .where('pedido_id', id);
+      if (moviments.length === 0) {
+        const moviment = {
+          tipo: 'entrada',
+          valor: request[0].valor,
+          pedido_id: id,
+        };
+        await knex('movimentacoes').insert(moviment);
+      }
+    }
+
     const data = {
       statusentrega,
       statuspag,
