@@ -1,3 +1,13 @@
+
+
+
+
+
+
+
+
+
+
 create table cargos (
 	id serial primary key,
   funcao text not null
@@ -98,8 +108,3 @@ create table avaliacoes (
   estrelas int not null,
   produto_id int not null references produtos(id)
 );
-
-
-
-
-
