@@ -1,17 +1,13 @@
-
-
-
-
-
-
-
-
-
-
 create table cargos (
 	id serial primary key,
   funcao text not null
 );
+
+insert into cargos (funcao) values ('Admin');
+insert into cargos (funcao) values ('Gerente');
+insert into cargos (funcao) values ('Estoque');
+insert into cargos (funcao) values ('Consultor');
+insert into cargos (funcao) values ('Cliente');
 
 create table usuarios (
   id serial primary key,
@@ -77,6 +73,11 @@ create table saques (
   consultor_id int not null references usuarios(id)
 );
 
+create table categorias (
+	id serial primary key,
+  categoria text not null
+);
+
 create table produtos (
 	id serial primary key,
   nome text not null,
@@ -91,7 +92,8 @@ create table produtos (
   peso decimal null,
   largura decimal null,
   profundidade decimal null,
-  imagens text array null
+  imagens text array null,
+  categoria_id int not null references categorias(id)
 );
 
 create table consultor_produtos(
@@ -108,3 +110,16 @@ create table avaliacoes (
   estrelas int not null,
   produto_id int not null references produtos(id)
 );
+
+create table movimentacoes (
+	id serial primary key,
+  tipo text not null,
+  valor decimal not null,
+  saque_id int unique null references saques(id),
+  pedido_id int unique null references pedidos(id)
+);
+
+
+
+
+
