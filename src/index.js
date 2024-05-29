@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocs = require('./swagger.json');
 const path = require('path');
@@ -9,6 +10,7 @@ const port = process.env.PORT || 3000;
 const routes = require('./routes/route');
 
 app.use(express.json());
+app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use(routes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
