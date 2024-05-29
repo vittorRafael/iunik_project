@@ -35,7 +35,6 @@ const addWithdraw = async (req, res) => {
       pedido_resto_id = requestRest[0].id;
     } else {
       if (valorsaque == req.userLogged.valordispsaque) {
-        console.log('entrou aqui 1');
         for (let request of requests) {
           pedidos_ids.push(request.id);
           valortotal += parseFloat(request.valorconsult);
@@ -91,7 +90,6 @@ const addWithdraw = async (req, res) => {
     await knex('saques').insert(data);
     return res.json({ success: 'Saque solicitado com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -142,7 +140,6 @@ const addComprov = async (req, res) => {
       .returning('*');
     return res.json({ success: 'Comprovante adicionado com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -167,7 +164,6 @@ const removeComprov = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };

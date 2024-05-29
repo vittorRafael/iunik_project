@@ -40,7 +40,6 @@ const addAssessments = async (req, res) => {
       .status(200)
       .json({ success: 'Avaliação adicionada com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -58,7 +57,6 @@ const listAssessments = async (req, res) => {
 
     return res.status(200).json(assessments);
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -103,7 +101,6 @@ const updateAssessments = async (req, res) => {
       .status(200)
       .json({ success: 'Avaliação atualizada com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -131,7 +128,6 @@ const removeAssessment = async (req, res) => {
 
     return res.status(200).json({ success: 'Avaliação excluída com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };

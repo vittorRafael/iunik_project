@@ -206,7 +206,6 @@ const deleteProfile = async (req, res) => {
 
     return res.status(200).json({ success: 'Usuário excluído com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -245,7 +244,6 @@ const addImg = async (req, res) => {
       .returning('*');
     return res.json({ success: 'Imagem adicionada com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -287,7 +285,6 @@ const addCert = async (req, res) => {
       .returning('*');
     return res.json({ success: 'Certificado adicionado com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };

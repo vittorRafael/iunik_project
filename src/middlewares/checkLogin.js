@@ -34,7 +34,6 @@ const checkLogin = async (req, res, next) => {
           'Para acessar este recurso um token de autenticação necessário deve ser enviado.',
       });
 
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };

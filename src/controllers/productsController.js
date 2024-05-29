@@ -42,7 +42,6 @@ const addProduct = async (req, res) => {
 
     return res.status(200).json({ success: 'Produto cadastrado com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -149,7 +148,6 @@ const editProduct = async (req, res) => {
 
     return res.status(200).json({ success: 'Produto atualizado com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -169,9 +167,6 @@ const removeProduct = async (req, res) => {
       .del()
       .where('produto_id', id);
 
-    console.log(productConsultDeleted);
-    console.log(assessmentsDeleted);
-
     const productDeleted = await knex('produtos').del().where('id', id);
     if (productDeleted.rowCount === 0)
       return res.status(400).json({
@@ -180,7 +175,6 @@ const removeProduct = async (req, res) => {
 
     return res.status(200).json({ success: 'Produto excluído com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -209,7 +203,6 @@ const addImgProd = async (req, res) => {
       .returning('*');
     return res.json({ success: 'Imagens adicionadas com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -258,7 +251,6 @@ const removeImgProd = async (req, res) => {
         .json({ error: 'Imagens não excluídas, produto sem fotos!' });
     }
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
