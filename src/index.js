@@ -19,8 +19,6 @@ app.get('/uploads/:folder/:imageName', (req, res) => {
   const { folder, imageName } = req.params;
   const filePath = path.join(__dirname, '..', 'uploads', folder, imageName);
 
-  console.log(filePath);
-
   // Verifique se o arquivo existe
   fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {

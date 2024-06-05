@@ -86,6 +86,92 @@ const getProfile = async (req, res) => {
   return res.status(200).json(req.userLogged);
 };
 
+const updateUsers = async (req, res) => {
+  const { id } = req.params;
+  const {
+    nome,
+    cpf,
+    email,
+    telefone,
+    rua,
+    bairro,
+    cep,
+    cidade,
+    estado,
+    agencia,
+    conta,
+    pix,
+  } = req.body;
+  if (
+    !nome &&
+    !email &&
+    !cpf &&
+    !rua &&
+    !bairro &&
+    !cep &&
+    !cidade &&
+    !estado &&
+    !agencia &&
+    !conta &&
+    !pix &&
+    !cpf &&
+    !telefone
+  )
+    return res.status(400).json({ error: 'Sem alterações!' });
+
+  if (cpf && cpf.length != 14 && cpf.length != 11)
+    return res.status(400).json({ error: 'CPF inválido!' });
+  if (telefone && telefone.length < 11)
+    return res.status(400).json({ error: 'Telefone inválido!' });
+
+  try {
+    const user = await knex('usuarios').select('*').where('id', id);
+    if (user.length === 0)
+      return res.status(404).json({ error: 'Usuário não encontrado!' });
+
+    const cpfValid = cpf ? cpf.replaceAll('.', '').replace('-', '') : '';
+    const telefoneValid = telefone
+      ? telefone
+          .replaceAll('(', '')
+          .replaceAll(')', '')
+          .replaceAll(' ', '')
+          .replaceAll('+', '')
+          .replaceAll('-', '')
+      : '';
+    const emailValid = email ? email : '';
+    const existUser = await knex('usuarios')
+      .where('email', emailValid)
+      .orWhere('cpf', cpfValid);
+
+    if (existUser.length > 0 && email != user[0].email)
+      return res
+        .status(400)
+        .json({ error: 'O email ou CPF informados já existem!' });
+
+    const data = {
+      nome: nome || user[0].nome,
+      email: email || user[0].email,
+      cargo_id: user[0].cargo_id,
+      cpf: cpfValid || user[0].cpf,
+      telefone: telefoneValid || user[0].telefone,
+      rua: rua || user[0].rua,
+      bairro: bairro || user[0].bairro,
+      cep: cep || user[0].cep,
+      cidade: cidade || user[0].cidade,
+      estado: estado || user[0].estado,
+      agencia: agencia || user[0].agencia,
+      conta: conta || user[0].conta,
+      pix: pix || user[0].pix,
+    };
+
+    await knex('usuarios').where('id', id).update(data).returning('*');
+
+    return res.status(200).json({ success: 'Usuário atualizado com sucesso!' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Erro no servidor!' });
+  }
+};
+
 const updateProfile = async (req, res) => {
   const { id, ...userAtual } = req.userLogged;
   const {
@@ -313,6 +399,7 @@ module.exports = {
   insertUser,
   getProfile,
   updateProfile,
+  updateUsers,
   deleteProfile,
   listUsers,
   addImg,

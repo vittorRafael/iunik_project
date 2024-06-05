@@ -8,7 +8,6 @@ const uploadCert = require('../middlewares/addCert');
 
 // cadastro de usuario
 router.post('/usuarios', userController.insertUser);
-router.get('/usuarios/:id', userController.listUsers);
 
 // login
 router.post('/login', loginController.login);
@@ -17,6 +16,10 @@ router.post('/alterar_senha', loginController.updatePass);
 
 // Verificar usuario logado
 router.use(checkLogin);
+
+//Tabela Usuários
+router.get('/usuarios/:id', userController.listUsers);
+router.patch('/usuarios/:id', userController.updateUsers);
 
 // obter e atualizar perfil do usuario logado
 router.post('/perfil/foto', uploadImage.single('file'), userController.addImg);
