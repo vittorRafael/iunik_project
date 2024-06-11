@@ -43,6 +43,12 @@ create table formaspagamento (
   forma text not null
 );
 
+insert into formaspagamento (forma) values ('pix');
+insert into formaspagamento (forma) values ('credito');
+insert into formaspagamento (forma) values ('debito');
+insert into formaspagamento (forma) values ('boleto');
+
+
 create table pedidos (
 	id serial primary key,
   dataPedido text not null,

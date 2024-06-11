@@ -9,8 +9,10 @@ const requestsRoutes = require('./requestsRoutes');
 const withdrawRoutes = require('./withdrawRoutes');
 const assessmentsRoutes = require('./assessmentsRoutes');
 const productsRoutes = require('./productsRoutes');
+const mercadoPagoRoutes = require('./mercadoPagoRoutes');
 
 router.use(positionRoutes);
+router.use(mercadoPagoRoutes);
 router.use(userRoutes);
 router.use(categoryRoutes);
 router.use(consultRoutes);

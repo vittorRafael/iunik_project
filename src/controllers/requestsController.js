@@ -1,5 +1,11 @@
 const knex = require('../config/connect');
 const { dataAtualFormatada, compararDatas } = require('../functions/functions');
+const { MercadoPagoConfig, Preference } = require('mercadopago');
+require('dotenv').config();
+
+const client = new MercadoPagoConfig({
+  accessToken: process.env.ACCESS_TOKEN || '',
+});
 
 const listRequests = async (req, res) => {
   const { id } = req.params;
@@ -27,6 +33,7 @@ const addRequest = async (req, res) => {
   let cliente_id = 1;
   let valorconsult = 0;
   let valor = 0;
+  const items = [];
 
   if (!produtos_ids || !modelo)
     return res.status(400).json({ error: 'Preencha todos os campos!' });
@@ -60,6 +67,7 @@ const addRequest = async (req, res) => {
         .select('*')
         .whereIn('id', produtos_ids)
         .where('inativo', false);
+
       if (products.length !== produtos_ids.length)
         return res
           .status(400)
@@ -67,6 +75,16 @@ const addRequest = async (req, res) => {
 
       products.forEach(async (product) => {
         valor += parseFloat(product.valorvenda);
+        items.push({
+          id: product.id,
+          title: product.nome,
+          currency_id: 'BRL',
+          picture_url: product.imagens ? product.imagens[0] : '',
+          description: product.descricao,
+          category_id: product.categoria_id,
+          quantity: 1,
+          unit_price: parseFloat(product.valorvenda),
+        });
       });
     } else {
       consultor_id = user_id;
@@ -85,10 +103,36 @@ const addRequest = async (req, res) => {
       products.forEach(async (product) => {
         valorconsult += parseFloat(product.valorconsult);
         valor += parseFloat(product.valortotal);
+        items.push({
+          id: product.id,
+          title: product.nome,
+          currency_id: 'BRL',
+          picture_url: product.imagens ? product.imagens[0] : '',
+          description: product.descricao,
+          category_id: product.categoria_id,
+          quantity: 1,
+          unit_price: parseFloat(product.valortotal),
+        });
       });
     }
 
     const datapedido = dataAtualFormatada();
+
+    const preference = new Preference(client);
+
+    const response = await preference.create({
+      body: {
+        items,
+        back_urls: {
+          success: 'http://localhost:3000/mercadopagosuccess',
+          failure: 'http://localhost:3000/mercadopagofailure',
+        },
+        auto_return: 'approved',
+        expires: true,
+        expiration_date_from: '2016-02-01T12:00:00.000-04:00',
+        expiration_date_to: '2024-07-28T12:00:00.000-04:00',
+      },
+    });
 
     const newRequest = {
       datapedido,
@@ -104,8 +148,12 @@ const addRequest = async (req, res) => {
 
     await knex('pedidos').insert(newRequest).returning('*');
 
-    return res.status(200).json({ success: 'Pedido cadastrado com sucesso!' });
+    return res.status(200).json({
+      success: 'Pedido cadastrado com sucesso!',
+      link: response.init_point,
+    });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -116,9 +164,20 @@ const editRequest = async (req, res) => {
     const request = await knex('pedidos').where('id', id);
     if (request.length === 0)
       return res.status(404).json({ error: 'Pedido não encontrado!' });
-    const { statuspag, statusentrega } = req.body;
-    if (!statusentrega && !statuspag)
+    const { statuspag, statusentrega, formapag_id } = req.body;
+    if (!statusentrega && !statuspag && !formapag_id)
       return res.status(400).json({ error: 'Nenhuma alteração encontrada!' });
+
+    if (statuspag == 'realizado' && !formapag_id)
+      return res
+        .status(400)
+        .json({ error: 'Forma de pagamento não identificada!' });
+
+    const formapag = await knex('formaspagamento').where('id', formapag_id);
+    if (formapag.length === 0)
+      return res
+        .status(404)
+        .json({ error: 'Forma de pagamento não identificada!' });
 
     if (statuspag) {
       const moviments = await knex('movimentacoes')
@@ -137,12 +196,14 @@ const editRequest = async (req, res) => {
     const data = {
       statusentrega,
       statuspag,
+      formapag_id,
     };
 
     await knex('pedidos').where('id', id).update(data).returning('*');
 
     return res.status(200).json({ success: 'Pedido atualizado com sucesso!' });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -186,6 +247,8 @@ const balanceAvailable = async (req, res) => {
         parseFloat(res[0].valordispsaque) + parseFloat(request.valorconsult);
       if (
         request.formapag_id === 1 &&
+        request.formapag_id === 3 &&
+        request.formapag_id === 4 &&
         compararDatas(today, request.datapedido, 7) &&
         request.statuspag == 'realizado'
       ) {
