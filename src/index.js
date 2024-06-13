@@ -12,9 +12,6 @@ const routes = require('./routes/route');
 app.use(express.json());
 app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-app.use(routes);
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 app.get('/uploads/:folder/:imageName', (req, res) => {
   const { folder, imageName } = req.params;
   const filePath = path.join(__dirname, '..', 'uploads', folder, imageName);
@@ -29,6 +26,8 @@ app.get('/uploads/:folder/:imageName', (req, res) => {
     res.sendFile(filePath);
   });
 });
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(routes);
 
 app.listen(port, () => {
   console.log(`Servidor rodando na porta ${port}!!!`);
