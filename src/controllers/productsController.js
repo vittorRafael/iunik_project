@@ -25,6 +25,18 @@ const addProduct = async (req, res) => {
     const category = await knex('categorias').where('id', categoria_id);
     if (category.length === 0)
       return res.status(404).json({ error: 'Categoria não encontrada!' });
+
+    if (valorvenda < valormin)
+      return res.status(404).json({
+        error:
+          'O valor da venda não pode ser menor que o valor mínimo do produto!',
+      });
+    if (valorvenda > valormax)
+      return res.status(404).json({
+        error:
+          'O valor da venda não pode ser maior que o valor máximo do produto!',
+      });
+
     const newProduct = {
       nome,
       descricao,
@@ -38,9 +50,11 @@ const addProduct = async (req, res) => {
       categoria_id,
     };
 
-    await knex('produtos').insert(newProduct).returning('*');
-
-    return res.status(200).json({ success: 'Produto cadastrado com sucesso!' });
+    const product = await knex('produtos').insert(newProduct).returning('*');
+    return res.status(200).json({
+      success: 'Produto cadastrado com sucesso!',
+      idProduct: product[0].id,
+    });
   } catch (error) {
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
@@ -113,13 +127,13 @@ const editProduct = async (req, res) => {
 
     valorvenda = req.body.valorvenda
       ? parseFloat(valorvenda).toFixed(2)
-      : product[0].valorvenda;
+      : parseFloat(product[0].valorvenda);
     valormin = req.body.valormin
       ? parseFloat(valormin).toFixed(2)
-      : product[0].valormin;
+      : parseFloat(product[0].valormin);
     valormax = req.body.valormax
       ? parseFloat(valormax).toFixed(2)
-      : product[0].valormax;
+      : parseFloat(product[0].valormax);
     altura = req.body.altura
       ? parseFloat(altura).toFixed(2)
       : product[0].altura;
@@ -130,6 +144,20 @@ const editProduct = async (req, res) => {
     profundidade = req.body.profundidade
       ? parseFloat(profundidade).toFixed(2)
       : product[0].profundidade;
+
+    if (valorvenda < valormin)
+      return res.status(404).json({
+        error:
+          'O valor da venda não pode ser menor que o valor mínimo do produto!',
+      });
+    if (valorvenda > valormax)
+      return res.status(404).json({
+        error:
+          'O valor da venda não pode ser maior que o valor máximo do produto!',
+      });
+
+    console.log(valorvenda);
+    console.log(valormax);
 
     const data = {
       nome: nome ?? product[0].nome,

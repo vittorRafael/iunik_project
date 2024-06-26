@@ -1,5 +1,10 @@
 const knex = require('../config/connect');
-const { dataAtualFormatada, compararDatas } = require('../functions/functions');
+const {
+  dataAtualFormatada,
+  compararDatas,
+  convertToISO8601,
+  adicionarMes,
+} = require('../functions/functions');
 const { MercadoPagoConfig, Preference } = require('mercadopago');
 require('dotenv').config();
 
@@ -25,7 +30,18 @@ const listRequests = async (req, res) => {
 };
 
 const addRequest = async (req, res) => {
-  const { formapag_id, produtos_ids, modelo } = req.body;
+  const {
+    formapag_id,
+    produtos_ids,
+    modelo,
+    rua,
+    numero,
+    bairro,
+    cep,
+    cidade,
+    estado,
+    complemento,
+  } = req.body;
   const valorfrete = parseFloat(req.body.valorfrete) || 0;
 
   let user_id = req.userLogged.id;
@@ -35,20 +51,19 @@ const addRequest = async (req, res) => {
   let valor = 0;
   const items = [];
 
-  if (!produtos_ids || !modelo)
+  if (
+    !produtos_ids ||
+    !modelo ||
+    !rua ||
+    !numero ||
+    !bairro ||
+    !cep ||
+    !cidade ||
+    !estado ||
+    !complemento
+  )
     return res.status(400).json({ error: 'Preencha todos os campos!' });
   try {
-    if (formapag_id) {
-      const existFormPag = await knex('formaspagamento').where(
-        'id',
-        formapag_id,
-      );
-      if (existFormPag.length === 0)
-        return res
-          .status(400)
-          .json({ error: 'Forma de pagamento inválida, tente novamente!' });
-    }
-
     const existConsult = await knex('usuarios')
       .where('id', user_id)
       .where('cargo_id', 4);
@@ -128,9 +143,6 @@ const addRequest = async (req, res) => {
           failure: 'http://localhost:3000/mercadopagofailure',
         },
         auto_return: 'approved',
-        expires: true,
-        expiration_date_from: '2016-02-01T12:00:00.000-04:00',
-        expiration_date_to: '2024-07-28T12:00:00.000-04:00',
       },
     });
 
@@ -144,6 +156,15 @@ const addRequest = async (req, res) => {
       cliente_id,
       produtos_ids,
       modelo,
+      rua,
+      numero,
+      bairro,
+      cep,
+      cidade,
+      estado,
+      complemento,
+      mercadopago_id: response.id,
+      linkpagamento: response.init_point,
     };
 
     await knex('pedidos').insert(newRequest).returning('*');
@@ -164,8 +185,32 @@ const editRequest = async (req, res) => {
     const request = await knex('pedidos').where('id', id);
     if (request.length === 0)
       return res.status(404).json({ error: 'Pedido não encontrado!' });
-    const { statuspag, statusentrega, formapag_id } = req.body;
-    if (!statusentrega && !statuspag && !formapag_id)
+    const {
+      statuspag,
+      statusentrega,
+      formapag_id,
+      rua,
+      numero,
+      bairro,
+      cep,
+      cidade,
+      estado,
+      complemento,
+      modelo,
+    } = req.body;
+    if (
+      !statusentrega &&
+      !statuspag &&
+      !formapag_id &&
+      !rua &&
+      !numero &&
+      !bairro &&
+      !cep &&
+      !cidade &&
+      !complemento &&
+      !estado &&
+      !modelo
+    )
       return res.status(400).json({ error: 'Nenhuma alteração encontrada!' });
 
     if (statuspag == 'realizado' && !formapag_id)
@@ -173,13 +218,15 @@ const editRequest = async (req, res) => {
         .status(400)
         .json({ error: 'Forma de pagamento não identificada!' });
 
-    const formapag = await knex('formaspagamento').where('id', formapag_id);
-    if (formapag.length === 0)
-      return res
-        .status(404)
-        .json({ error: 'Forma de pagamento não identificada!' });
+    if (formapag_id) {
+      const formapag = await knex('formaspagamento').where('id', formapag_id);
+      if (formapag.length === 0)
+        return res
+          .status(404)
+          .json({ error: 'Forma de pagamento não identificada!' });
+    }
 
-    if (statuspag) {
+    if (statuspag == 'realizado') {
       const moviments = await knex('movimentacoes')
         .select('*')
         .where('pedido_id', id);
@@ -193,10 +240,27 @@ const editRequest = async (req, res) => {
       }
     }
 
+    if (
+      request[0].statusentrega !== 'pendente' &&
+      (rua || numero || bairro || cep || cidade || complemento || estado)
+    ) {
+      return res.status(400).json({
+        error: 'Não é possível modificar o endereço, entrega em andamento!',
+      });
+    }
+
     const data = {
-      statusentrega,
-      statuspag,
-      formapag_id,
+      statusentrega: statusentrega ?? request[0].statusentrega,
+      statuspag: statuspag ?? request[0].statuspag,
+      formapag_id: formapag_id ?? request[0].formapag_id,
+      rua: rua ?? request[0].rua,
+      numero: numero ?? request[0].numero,
+      bairro: bairro ?? request[0].bairro,
+      cep: cep ?? request[0].cep,
+      cidade: cidade ?? request[0].cidade,
+      estado: estado ?? request[0].estado,
+      complemento: complemento ?? request[0].complemento,
+      modelo: modelo ?? request[0].modelo,
     };
 
     await knex('pedidos').where('id', id).update(data).returning('*');
