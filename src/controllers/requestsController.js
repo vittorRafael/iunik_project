@@ -371,6 +371,19 @@ const getBalance = async (req, res) => {
   }
 };
 
+const listPreferenceRequest = async (req, res) => {
+  const { preferenceId } = req.params;
+  try {
+    const request = await knex('pedidos')
+      .select('*')
+      .where('mercadopago_id', preferenceId);
+    return res.status(200).json(request[0]);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: 'Erro no servidor!' });
+  }
+};
+
 module.exports = {
   listRequests,
   addRequest,
@@ -378,4 +391,5 @@ module.exports = {
   removeRequest,
   balanceAvailable,
   getBalance,
+  listPreferenceRequest,
 };

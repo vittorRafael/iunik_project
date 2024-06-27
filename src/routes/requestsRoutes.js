@@ -9,5 +9,9 @@ router.delete('/pedidos/:id', requestsController.removeRequest);
 
 router.post('/saldodisp', requestsController.balanceAvailable);
 router.get('/saldodisp', requestsController.getBalance);
+router.get(
+  '/pedidos/preferences/:preferenceId',
+  requestsController.listPreferenceRequest,
+);
 
 module.exports = router;

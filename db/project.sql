@@ -66,7 +66,7 @@ create table pedidos (
   estado text not null,
   complemento text not null,
   statuspag text default 'aguardando',
-  statusentrega text default 'em andamento',
+  statusentrega text default 'pendente',
   modelo text not null,
   consultPago boolean default false,
   saldodisp boolean default false,
