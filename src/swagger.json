@@ -806,8 +806,15 @@
                 "produto": {
                   "value": {
                     "produtos_ids": [1],
-                    "valorfrete": 20,
-                    "modelo": "venda"
+                    "valorfrete": 100,
+                    "modelo": "venda",
+                    "rua": "Rua teste",
+                    "numero": "S/N",
+                    "bairro": "Teste",
+                    "cep": "00000000",
+                    "cidade": "Teste",
+                    "estado": "CE",
+                    "complemento": "Teste"
                   }
                 }
               }
@@ -846,7 +853,7 @@
       },
       "patch": {
         "summary": "Editar pedido",
-        "description": "Essa rota será responsável por editar status de pagamento e de entrega de um pedido pelo ID.",
+        "description": "Essa rota será responsável por editar status de pagamento e de entrega de um pedido pelo ID. Obs: Só poderá editar o endereço caso o statusentrega esteja em pendente. Obs2: Só será possível alterar o statuspag para realizado caso seja informada a forma de pagamento.",
         "tags": ["Pedidos"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -867,7 +874,16 @@
                 "produto": {
                   "value": {
                     "statuspag": "realizado",
-                    "statusentrega": "realizada"
+                    "statusentrega": "realizada",
+                    "formapag_id": "1",
+                    "rua": "Rua Teste 2",
+                    "numero": "S/N",
+                    "bairro": "Teste",
+                    "cep": "00000000",
+                    "cidade": "Teste",
+                    "estado": "CE",
+                    "complemento": "Teste",
+                    "modelo": "compra"
                   }
                 }
               }
@@ -1172,6 +1188,27 @@
             "type": "number"
           },
           "modelo": {
+            "type": "string"
+          },
+          "rua": {
+            "type": "string"
+          },
+          "numero": {
+            "type": "string"
+          },
+          "bairro": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "cep": {
+            "type": "string"
+          },
+          "cidade": {
+            "type": "string"
+          },
+          "complemento": {
             "type": "string"
           }
         }
