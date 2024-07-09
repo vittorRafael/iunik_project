@@ -17,7 +17,7 @@ transport.use(
     viewEngine: {
       extname: '.html',
       layoutsDir: 'src/resources/mail/',
-      defaultLayout: 'forgotPass',
+      defaultLayout: '',
       partialsDir: 'src/resources/mail/',
     },
     viewPath: 'src/resources/mail/',

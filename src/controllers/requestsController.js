@@ -7,6 +7,7 @@ const {
 } = require('../functions/functions');
 const { MercadoPagoConfig, Preference } = require('mercadopago');
 require('dotenv').config();
+const mailer = require('../modules/mailer');
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.ACCESS_TOKEN || '',
@@ -43,6 +44,7 @@ const addRequest = async (req, res) => {
     complemento,
   } = req.body;
   const valorfrete = parseFloat(req.body.valorfrete) || 0;
+  const admins = await knex('usuarios').where('cargo_id', 1);
 
   let user_id = req.userLogged.id;
   let consultor_id = 1;
@@ -167,7 +169,29 @@ const addRequest = async (req, res) => {
       linkpagamento: response.init_point,
     };
 
-    await knex('pedidos').insert(newRequest).returning('*');
+    const request = await knex('pedidos').insert(newRequest).returning('*');
+
+    admins.forEach((admin) => {
+      mailer.sendMail(
+        {
+          to: admin.email,
+          from: process.env.FROM_MAIL,
+          template: './addRequest',
+          subject: `(BIODERMIS) - Pedido n° ${request[0].id}`,
+          context: {
+            qtdProdutos: produtos_ids.length,
+            valor: valor.toFixed(2),
+            id: request[0].id,
+          },
+        },
+        (err) => {
+          if (err)
+            return res.status(400).json({
+              error: 'Não foi possível enviar o email, tente novamente!',
+            });
+        },
+      );
+    });
 
     return res.status(200).json({
       success: 'Pedido cadastrado com sucesso!',
@@ -197,6 +221,9 @@ const editRequest = async (req, res) => {
       estado,
       complemento,
       modelo,
+      dataenvio,
+      formaEnvio,
+      codigoRastreio,
     } = req.body;
     if (
       !statusentrega &&
@@ -209,7 +236,10 @@ const editRequest = async (req, res) => {
       !cidade &&
       !complemento &&
       !estado &&
-      !modelo
+      !modelo &&
+      !codigoRastreio &&
+      !dataenvio &&
+      !formaEnvio
     )
       return res.status(400).json({ error: 'Nenhuma alteração encontrada!' });
 
@@ -246,6 +276,43 @@ const editRequest = async (req, res) => {
     ) {
       return res.status(400).json({
         error: 'Não é possível modificar o endereço, entrega em andamento!',
+      });
+    }
+
+    let client = await knex('usuarios').where('id', request[0].consultor_id);
+    if (client.length === 0)
+      client = await knex('usuarios').where('id', request[0].cliente_id);
+
+    if (codigoRastreio && dataenvio && formaEnvio) {
+      mailer.sendMail(
+        {
+          to: client[0].email,
+          from: process.env.FROM_MAIL,
+          template: './confirmShipping',
+          subject: `(BIODERMIS) - Pedido n° ${request[0].id} enviado!`,
+          context: {
+            codigoRastreio,
+            formaEnvio,
+            dataenvio,
+            id: request[0].id,
+          },
+        },
+        (err) => {
+          if (err)
+            return res.status(400).json({
+              error: 'Não foi possível enviar o email, tente novamente!',
+            });
+        },
+      );
+    } else if (
+      codigoRastreio &&
+      dataenvio &&
+      formaEnvio &&
+      statuspag !== 'realizado'
+    ) {
+      return res.json({
+        error:
+          'Não foi possível alterar as informações de entrega, pagamento pendente!',
       });
     }
 
@@ -310,9 +377,9 @@ const balanceAvailable = async (req, res) => {
       const valordispsaque =
         parseFloat(res[0].valordispsaque) + parseFloat(request.valorconsult);
       if (
-        request.formapag_id === 1 &&
-        request.formapag_id === 3 &&
-        request.formapag_id === 4 &&
+        (request.formapag_id === 1 ||
+          request.formapag_id === 3 ||
+          request.formapag_id === 4) &&
         compararDatas(today, request.datapedido, 7) &&
         request.statuspag == 'realizado'
       ) {

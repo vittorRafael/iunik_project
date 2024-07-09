@@ -32,6 +32,5 @@ router.post(
 router.delete('/perfil/certificado', userController.removeCert);
 router.get('/perfil', userController.getProfile);
 router.patch('/perfil', userController.updateProfile);
-router.delete('/perfil', userController.deleteProfile);
 
 module.exports = router;

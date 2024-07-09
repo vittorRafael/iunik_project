@@ -68,10 +68,12 @@ const forgotPass = async (req, res) => {
         context: { token },
       },
       (err) => {
-        if (err)
+        if (err) {
+          console.log(err);
           return res.status(400).json({
             error: 'Não foi possível enviar o email, tente novamente!',
           });
+        }
 
         return res.status(200).json({ success: 'Email enviado com sucesso!' });
       },

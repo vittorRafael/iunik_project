@@ -1,6 +1,8 @@
 const knex = require('../config/connect');
 const bcrypt = require('bcrypt');
 const fs = require('fs');
+const mailer = require('../modules/mailer');
+require('dotenv').config();
 
 const insertUser = async (req, res) => {
   const {
@@ -67,6 +69,7 @@ const insertUser = async (req, res) => {
       pix,
       senha: passCrip,
       cargo_id,
+      status: 'Em aprovação',
     };
 
     const user = await knex('usuarios').insert(newUser).returning('*');
@@ -76,8 +79,32 @@ const insertUser = async (req, res) => {
         error: 'Ocorreu um erro ao cadastrar o usuário, tente novamente!',
       });
 
+    if (cargo_id === 4) {
+      mailer.sendMail(
+        {
+          to: email,
+          from: process.env.FROM_MAIL,
+          template: './addConsult',
+          subject: `(BIODERMIS) - Novo consultor n° ${user[0].id}`,
+          context: {
+            nome,
+            email,
+            cpf,
+            id: user[0].id,
+          },
+        },
+        (err) => {
+          if (err)
+            return res.status(400).json({
+              error: 'Não foi possível enviar o email, tente novamente!',
+            });
+        },
+      );
+    }
+
     return res.status(200).json({ success: 'Usuário cadastrado com sucesso!' });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -254,48 +281,6 @@ const updateProfile = async (req, res) => {
   }
 };
 
-const deleteProfile = async (req, res) => {
-  const { id } = req.userLogged;
-
-  try {
-    //deletando todo produtos do consultor
-    const productDeleted = await knex('consultor_produtos')
-      .del()
-      .where('consultor_id', id);
-    if (productDeleted.rowCount === 0)
-      return res.status(400).json({
-        error: 'Não foi possível excluir o Produto, tente novamente!',
-      });
-
-    //deletando todos as vendas do consultor
-    const requestDeleted = await knex('pedidos')
-      .del()
-      .where('consultor_id', id);
-    if (requestDeleted.rowCount === 0)
-      return res
-        .status(400)
-        .json({ error: 'Não foi possível excluir o Pedido, tente novamente!' });
-
-    const withdrawDeleted = await knex('saques')
-      .del()
-      .where('consultor_id', id);
-    if (withdrawDeleted.rowCount === 0)
-      return res
-        .status(400)
-        .json({ error: 'Não foi possível excluir o Saque, tente novamente!' });
-
-    const userDeleted = await knex('usuarios').del().where('id', id);
-    if (userDeleted === 0)
-      return res.status(404).json({ error: 'Usuário não encontrado!' });
-    if (userDeleted.rowCount === 0)
-      return res.status(400).json({ error: 'O usuário não foi excluido!' });
-
-    return res.status(200).json({ success: 'Usuário excluído com sucesso!' });
-  } catch (error) {
-    return res.status(500).json({ error: 'Erro no servidor!' });
-  }
-};
-
 const listUsers = async (req, res) => {
   const { id } = req.params;
   try {
@@ -400,7 +385,6 @@ module.exports = {
   getProfile,
   updateProfile,
   updateUsers,
-  deleteProfile,
   listUsers,
   addImg,
   removeImg,

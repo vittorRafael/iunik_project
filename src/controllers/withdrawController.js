@@ -1,9 +1,12 @@
 const knex = require('../config/connect');
 const { dataAtualFormatada } = require('../functions/functions');
 const fs = require('fs');
+const mailer = require('../modules/mailer');
+require('dotenv').config();
 
 const addWithdraw = async (req, res) => {
   try {
+    const admins = await knex('usuarios').where('cargo_id', 1);
     const valorsaque = parseFloat(req.body.valorsaque);
     if (isNaN(valorsaque))
       return res.status(400).json({ error: 'Informe o valor para saque!' });
@@ -80,14 +83,37 @@ const addWithdraw = async (req, res) => {
     const datasaque = dataAtualFormatada();
     const data = {
       datasaque,
-      valorsaque,
+      valorsaque: valorsaque.toFixed(2),
       valorresto,
       pedido_resto_id,
       pedidos_ids,
       consultor_id: req.userLogged.id,
     };
 
-    await knex('saques').insert(data);
+    const withdraw = await knex('saques').insert(data).returning('*');
+
+    admins.forEach((admin) => {
+      mailer.sendMail(
+        {
+          to: admin.email,
+          from: process.env.FROM_MAIL,
+          template: './addWithdraw',
+          subject: `(BIODERMIS) - Solicitação de saque n° ${withdraw[0].id}`,
+          context: {
+            nome_consultor: req.userLogged.nome,
+            valor: valorsaque.toFixed(2),
+            idsaque: withdraw[0].id,
+          },
+        },
+        (err) => {
+          if (err)
+            return res.status(400).json({
+              error: 'Não foi possível enviar o email, tente novamente!',
+            });
+        },
+      );
+    });
+
     return res.json({ success: 'Saque solicitado com sucesso!' });
   } catch (error) {
     return res.status(500).json({ error: 'Erro no servidor!' });
@@ -138,8 +164,34 @@ const addComprov = async (req, res) => {
       .where('id', id)
       .update({ srccomp: file.path, status: 'realizado' })
       .returning('*');
-    return res.json({ success: 'Comprovante adicionado com sucesso!' });
+
+    const consult = await knex('usuarios').where(
+      'id',
+      withdraw[0].consultor_id,
+    );
+
+    mailer.sendMail(
+      {
+        to: consult[0].email,
+        from: process.env.FROM_MAIL,
+        template: './confirmWithdraw',
+        subject: `(BIODERMIS) - Saque Realizado n° ${withdraw[0].id}`,
+        context: {
+          valor: withdraw[0].valorsaque,
+          idsaque: id,
+        },
+      },
+      (err) => {
+        if (err)
+          return res.status(400).json({
+            error: 'Não foi possível enviar o email, tente novamente!',
+          });
+
+        return res.json({ success: 'Comprovante adicionado com sucesso!' });
+      },
+    );
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
