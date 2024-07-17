@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express();
 const requestsController = require('../controllers/requestsController');
+const authorize = require('../middlewares/authorize');
 
-router.post('/pedidos', requestsController.addRequest);
+router.post('/pedidos', authorize(4, 5), requestsController.addRequest);
 router.get('/pedidos/:id', requestsController.listRequests);
 router.patch('/pedidos/:id', requestsController.editRequest);
 router.delete('/pedidos/:id', requestsController.removeRequest);

@@ -112,24 +112,55 @@ const addRequest = async (req, res) => {
         .where('produtos.inativo', false)
         .where('consultor_produtos.consultor_id', consultor_id)
         .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id');
-      if (products.length !== produtos_ids.length)
-        return res
-          .status(400)
-          .json({ error: 'Produto selecionado não existe, tente novamente!' });
-
-      products.forEach(async (product) => {
-        valorconsult += parseFloat(product.valorconsult);
-        valor += parseFloat(product.valortotal);
-        items.push({
-          id: product.id,
-          title: product.nome,
-          currency_id: 'BRL',
-          picture_url: product.imagens ? product.imagens[0] : '',
-          description: product.descricao,
-          category_id: product.categoria_id,
-          quantity: 1,
-          unit_price: parseFloat(product.valortotal),
+      if (products.length !== produtos_ids.length) {
+        products.forEach((product) => {
+          if (produtos_ids.includes(product.produto_id)) {
+            const index = produtos_ids.indexOf(product.produto_id);
+            produtos_ids.splice(index, 1);
+          }
         });
+        const productsGeneral = await knex('produtos')
+          .select('*')
+          .whereIn('id', produtos_ids)
+          .where('inativo', false);
+
+        if (productsGeneral.length !== produtos_ids.length)
+          return res.status(400).json({
+            error: 'Produto selecionado não existe, tente novamente!',
+          });
+
+        productsGeneral.forEach((productGeneral) => {
+          products.push(productGeneral);
+        });
+      }
+      products.forEach(async (product) => {
+        if (product.valorconsult) {
+          valorconsult += parseFloat(product.valorconsult);
+          valor += parseFloat(product.valortotal);
+          items.push({
+            id: product.id,
+            title: product.nome,
+            currency_id: 'BRL',
+            picture_url: product.imagens ? product.imagens[0] : '',
+            description: product.descricao,
+            category_id: product.categoria_id,
+            quantity: 1,
+            unit_price: parseFloat(product.valortotal),
+          });
+        } else {
+          valorconsult += 1.0;
+          valor += parseFloat(product.valormin);
+          items.push({
+            id: product.id,
+            title: product.nome,
+            currency_id: 'BRL',
+            picture_url: product.imagens ? product.imagens[0] : '',
+            description: product.descricao,
+            category_id: product.categoria_id,
+            quantity: 1,
+            unit_price: parseFloat(product.valormin),
+          });
+        }
       });
     }
 
