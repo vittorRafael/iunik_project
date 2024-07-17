@@ -156,9 +156,6 @@ const editProduct = async (req, res) => {
           'O valor da venda não pode ser maior que o valor máximo do produto!',
       });
 
-    console.log(valorvenda);
-    console.log(valormax);
-
     const data = {
       nome: nome ?? product[0].nome,
       descricao: descricao ?? product[0].descricao,

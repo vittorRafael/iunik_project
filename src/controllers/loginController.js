@@ -69,7 +69,6 @@ const forgotPass = async (req, res) => {
       },
       (err) => {
         if (err) {
-          console.log(err);
           return res.status(400).json({
             error: 'Não foi possível enviar o email, tente novamente!',
           });
@@ -111,7 +110,6 @@ const updatePass = async (req, res) => {
       })
       .returning('*');
 
-    console.log(userUpdated);
     res.status(200).json({ success: 'Senha alterada com sucesso!' });
   } catch (error) {
     return res.status(500).json({ error: 'Erro no servidor!' });

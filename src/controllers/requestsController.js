@@ -229,7 +229,6 @@ const addRequest = async (req, res) => {
       link: response.init_point,
     });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -365,7 +364,6 @@ const editRequest = async (req, res) => {
 
     return res.status(200).json({ success: 'Pedido atualizado com sucesso!' });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -477,7 +475,6 @@ const listPreferenceRequest = async (req, res) => {
       .where('mercadopago_id', preferenceId);
     return res.status(200).json(request[0]);
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };

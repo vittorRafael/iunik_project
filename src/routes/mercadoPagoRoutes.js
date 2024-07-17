@@ -41,7 +41,6 @@ router.post('/mercadopago', async (req, res) => {
 
     return res.json(response.init_point);
   } catch (error) {
-    console.log(error.message);
     res.status(500).json(error.message);
   }
 });
