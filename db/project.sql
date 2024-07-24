@@ -137,7 +137,25 @@ create table movimentacoes (
   pedido_id int unique null references pedidos(id)
 );
 
+create table carrosseis (
+	id serial primary key,
+  imagens object 
+);
 
+create table carrosseis (
+    id SERIAL PRIMARY KEY,
+    titulo TEXT NOT NULL,
+    imagens JSONB NOT NULL
+);
 
+INSERT INTO carrosseis (titulo, imagens) 
+VALUES 
+('Meu Carrossel 1', '[]');
 
+INSERT INTO carrosseis (titulo, imagens) 
+VALUES 
+('Meu Carrossel 2', '[]');
 
+INSERT INTO carrosseis (titulo, imagens) 
+VALUES 
+('Meu Carrossel 3', '[]');
