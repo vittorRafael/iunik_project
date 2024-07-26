@@ -137,10 +137,6 @@ create table movimentacoes (
   pedido_id int unique null references pedidos(id)
 );
 
-create table carrosseis (
-	id serial primary key,
-  imagens object 
-);
 
 create table carrosseis (
     id SERIAL PRIMARY KEY,
@@ -150,12 +146,12 @@ create table carrosseis (
 
 INSERT INTO carrosseis (titulo, imagens) 
 VALUES 
-('Meu Carrossel 1', '[]');
+('Principal', '[]');
 
 INSERT INTO carrosseis (titulo, imagens) 
 VALUES 
-('Meu Carrossel 2', '[]');
+('Promoção', '[]');
 
 INSERT INTO carrosseis (titulo, imagens) 
 VALUES 
-('Meu Carrossel 3', '[]');
+('Mais Vendidos', '[]');

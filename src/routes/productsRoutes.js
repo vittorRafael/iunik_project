@@ -4,7 +4,6 @@ const productsController = require('../controllers/productsController');
 const uploadImages = require('../middlewares/addImgProd');
 
 router.post('/produtos', productsController.addProduct);
-router.get('/produtos/:id', productsController.listProducts);
 router.patch('/produtos/:id', productsController.editProduct);
 router.delete('/produtos/:id', productsController.removeProduct);
 router.get('/produtos', productsController.listProductsConsult);

@@ -68,22 +68,44 @@ const addImage = async (req, res) => {
 
 const editCarrossel = async (req, res) => {
   const carrosselId = req.params.id;
-  const newTitle = req.body.titulo;
-
-  if (!newTitle) {
-    return res.status(400).json({ error: 'Novo título não fornecido' });
-  }
+  const order = parseInt(req.body.order, 10); // Converte a ordem para um inteiro usando base 10
+  const file = req.file;
 
   try {
-    const result = await knex('carrosseis')
+    const carrossel = await knex('carrosseis')
       .where({ id: carrosselId })
-      .update({ titulo: newTitle });
+      .first();
 
-    if (result === 0) {
+    if (!carrossel) {
       return res.status(404).json({ error: 'Carrossel não encontrado' });
     }
 
-    res.status(200).json({ success: 'Título atualizado com sucesso' });
+    if (file) {
+      const imageUrl = file.path;
+      let imagens = carrossel.imagens;
+      if (typeof imagens === 'string') {
+        imagens = JSON.parse(imagens);
+      }
+
+      const imageIndex = imagens.findIndex((img) => img.order === order);
+      if (imageIndex === -1) {
+        return res
+          .status(404)
+          .json({ error: 'Imagem com a ordem especificada não encontrada' });
+      }
+
+      fs.unlinkSync(imagens[imageIndex].url);
+
+      // Substituir a imagem existente
+      imagens[imageIndex] = { order, url: imageUrl };
+
+      // Atualize o carrossel com o novo array de imagens
+      await knex('carrosseis')
+        .where({ id: carrosselId })
+        .update({ imagens: JSON.stringify(imagens) });
+    }
+
+    res.status(200).json({ success: 'Imagem substituída com sucesso' });
   } catch (error) {
     return res.status(500).json({ error: 'Erro no servidor!' });
   }

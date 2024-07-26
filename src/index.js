@@ -4,12 +4,16 @@ const app = express();
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocs = require('./swagger.json');
+const bodyParser = require('body-parser');
 const path = require('path');
 const fs = require('fs');
 const port = process.env.PORT || 3000;
 const routes = require('./routes/route');
 
 app.use(express.json());
+// Middleware para parsing do corpo da requisição
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.get('/uploads/:folder/:imageName', (req, res) => {

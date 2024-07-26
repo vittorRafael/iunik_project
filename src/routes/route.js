@@ -11,9 +11,15 @@ const assessmentsRoutes = require('./assessmentsRoutes');
 const productsRoutes = require('./productsRoutes');
 const mercadoPagoRoutes = require('./mercadoPagoRoutes');
 const carrosselRoutes = require('./carrosselRoutes');
+const productsController = require('../controllers/productsController');
+const categoryController = require('../controllers/categoryController');
+const carrosselController = require('../controllers/carrosselController');
 
 router.use(positionRoutes);
 router.use(mercadoPagoRoutes);
+router.get('/produtos/:id', productsController.listProducts);
+router.get('/categorias', categoryController.listCategorys);
+router.get('/carrossel/:id', carrosselController.listCarrossel);
 router.use(userRoutes);
 router.use(categoryRoutes);
 router.use(consultRoutes);
