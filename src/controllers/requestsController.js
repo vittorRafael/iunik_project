@@ -42,6 +42,7 @@ const addRequest = async (req, res) => {
     cidade,
     estado,
     complemento,
+    formaenvio,
   } = req.body;
   const valorfrete = parseFloat(req.body.valorfrete) || 0;
   const admins = await knex('usuarios').where('cargo_id', 1);
@@ -62,7 +63,8 @@ const addRequest = async (req, res) => {
     !cep ||
     !cidade ||
     !estado ||
-    !complemento
+    !complemento ||
+    !formaenvio
   )
     return res.status(400).json({ error: 'Preencha todos os campos!' });
   try {
@@ -198,6 +200,7 @@ const addRequest = async (req, res) => {
       complemento,
       mercadopago_id: response.id,
       linkpagamento: response.init_point,
+      formaenvio,
     };
 
     const request = await knex('pedidos').insert(newRequest).returning('*');

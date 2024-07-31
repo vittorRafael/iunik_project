@@ -11,6 +11,7 @@ const assessmentsRoutes = require('./assessmentsRoutes');
 const productsRoutes = require('./productsRoutes');
 const mercadoPagoRoutes = require('./mercadoPagoRoutes');
 const carrosselRoutes = require('./carrosselRoutes');
+const addressRoutes = require('./addressRoutes');
 const productsController = require('../controllers/productsController');
 const categoryController = require('../controllers/categoryController');
 const carrosselController = require('../controllers/carrosselController');
@@ -29,5 +30,6 @@ router.use(withdrawRoutes);
 router.use(assessmentsRoutes);
 router.use(movimentRoutes);
 router.use(carrosselRoutes);
+router.use(addressRoutes);
 
 module.exports = router;

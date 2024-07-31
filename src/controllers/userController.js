@@ -10,15 +10,12 @@ const insertUser = async (req, res) => {
     cpf,
     email,
     telefone,
-    rua,
-    bairro,
-    cep,
-    cidade,
-    estado,
     senha,
     agencia,
     conta,
+    banco,
     pix,
+    tipochave,
     cargo_id,
   } = req.body;
 
@@ -59,14 +56,11 @@ const insertUser = async (req, res) => {
       email,
       telefone: telefoneValid,
       cpf: cpfValid,
-      rua,
-      bairro,
-      cep,
-      cidade,
-      estado,
       agencia,
+      banco,
       conta,
       pix,
+      tipochave,
       senha: passCrip,
       cargo_id,
       status: 'Em aprovação',
@@ -114,34 +108,19 @@ const getProfile = async (req, res) => {
 
 const updateUsers = async (req, res) => {
   const { id } = req.params;
-  const {
-    nome,
-    cpf,
-    email,
-    telefone,
-    rua,
-    bairro,
-    cep,
-    cidade,
-    estado,
-    agencia,
-    conta,
-    pix,
-  } = req.body;
+  const { nome, cpf, email, telefone, agencia, conta, banco, pix, tipochave } =
+    req.body;
   if (
     !nome &&
     !email &&
     !cpf &&
-    !rua &&
-    !bairro &&
-    !cep &&
-    !cidade &&
-    !estado &&
     !agencia &&
     !conta &&
     !pix &&
     !cpf &&
-    !telefone
+    !telefone &&
+    !banco &&
+    !tipochave
   )
     return res.status(400).json({ error: 'Sem alterações!' });
 
@@ -180,14 +159,11 @@ const updateUsers = async (req, res) => {
       cargo_id: user[0].cargo_id,
       cpf: cpfValid || user[0].cpf,
       telefone: telefoneValid || user[0].telefone,
-      rua: rua || user[0].rua,
-      bairro: bairro || user[0].bairro,
-      cep: cep || user[0].cep,
-      cidade: cidade || user[0].cidade,
-      estado: estado || user[0].estado,
       agencia: agencia || user[0].agencia,
       conta: conta || user[0].conta,
+      banco: banco || user[0].banco,
       pix: pix || user[0].pix,
+      tipochave: tipochave || user[0].tipochave,
     };
 
     await knex('usuarios').where('id', id).update(data).returning('*');
@@ -205,29 +181,25 @@ const updateProfile = async (req, res) => {
     cpf,
     email,
     telefone,
-    rua,
-    bairro,
-    cep,
-    cidade,
-    estado,
     agencia,
     conta,
+    banco,
     pix,
+    tipochave,
+    senha,
   } = req.body;
   if (
     !nome &&
     !email &&
     !cpf &&
-    !rua &&
-    !bairro &&
-    !cep &&
-    !cidade &&
-    !estado &&
     !agencia &&
     !conta &&
     !pix &&
     !cpf &&
-    !telefone
+    !telefone &&
+    !senha &&
+    !banco &&
+    !tipochave
   )
     return res.status(400).json({ error: 'Sem alterações!' });
 
@@ -256,20 +228,27 @@ const updateProfile = async (req, res) => {
         .status(400)
         .json({ error: 'O email ou CPF informados já existem!' });
 
+    if (senha != undefined && senha.trim() === '')
+      return res.status(400).json({ error: 'Senha não pode ser vazia!' });
+
+    let passCrip = '';
+
+    if (senha) {
+      passCrip = await bcrypt.hash(senha, 10);
+    }
+
     const data = {
       nome: nome || userAtual.nome,
       email: email || userAtual.email,
       cargo_id: userAtual.cargo_id,
       cpf: cpfValid || userAtual.cpf,
       telefone: telefoneValid || userAtual.telefone,
-      rua: rua || userAtual.rua,
-      bairro: bairro || userAtual.bairro,
-      cep: cep || userAtual.cep,
-      cidade: cidade || userAtual.cidade,
-      estado: estado || userAtual.estado,
       agencia: agencia || userAtual.agencia,
+      banco: banco || userAtual.banco,
       conta: conta || userAtual.conta,
       pix: pix || userAtual.pix,
+      tipochave: tipochave || userAtual.tipochave,
+      senha: passCrip || userAtual.senha,
     };
 
     await knex('usuarios').where('id', id).update(data).returning('*');

@@ -70,6 +70,7 @@ const editCarrossel = async (req, res) => {
   const carrosselId = req.params.id;
   const order = parseInt(req.body.order, 10); // Converte a ordem para um inteiro usando base 10
   const file = req.file;
+  const title = req.body.title;
 
   try {
     const carrossel = await knex('carrosseis')
@@ -78,6 +79,10 @@ const editCarrossel = async (req, res) => {
 
     if (!carrossel) {
       return res.status(404).json({ error: 'Carrossel não encontrado' });
+    }
+
+    if (title != undefined && title.trim() === '') {
+      return res.status(404).json({ error: 'Título não pode ser vazio!' });
     }
 
     if (file) {
@@ -102,11 +107,12 @@ const editCarrossel = async (req, res) => {
       // Atualize o carrossel com o novo array de imagens
       await knex('carrosseis')
         .where({ id: carrosselId })
-        .update({ imagens: JSON.stringify(imagens) });
+        .update({ imagens: JSON.stringify(imagens), titulo: title });
     }
 
     res.status(200).json({ success: 'Imagem substituída com sucesso' });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };

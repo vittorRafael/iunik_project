@@ -1,3 +1,4 @@
+
 create table cargos (
 	id serial primary key,
   funcao text not null
@@ -15,17 +16,14 @@ create table usuarios (
   email text unique not null, 
   telefone text not null,
   cpf text unique not null,
-  rua text null,
-  bairro text null,
-  cep text null,
-  cidade text null,
-  estado text null,
   senha text not null, 
   senhaResetToken text null,
   senhaResetTempo text null,
   agencia text null,
   conta text null,
+  banco text null,
   pix text null,
+  tipoChave text null,
  	srcPerfil text null,
   srcCert text null,
   status text default 'inativo',
@@ -155,3 +153,22 @@ VALUES
 INSERT INTO carrosseis (titulo, imagens) 
 VALUES 
 ('Mais Vendidos', '[]');
+
+
+create table enderecos (
+  id serial primary key,
+  usuario_id int not null references usuarios(id),
+	rua text not null,
+  bairro text not null,
+  complemento text null,
+  numero text not null,
+  cep text not null,
+  cidade text not null,
+  estado text not null
+);
+
+
+
+
+
+
