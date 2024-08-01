@@ -45,7 +45,7 @@ const listAddress = async (req, res) => {
         .where('usuario_id', id);
       if (address.length === 0)
         return res.status(404).json({ error: 'Endereço não encontrado!' });
-      return res.status(200).json(address[0]);
+      return res.status(200).json(address);
     }
   } catch (error) {
     return res.status(500).json({ error: 'Erro no servidor!' });
