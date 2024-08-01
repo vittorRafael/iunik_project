@@ -51,6 +51,8 @@ const insertUser = async (req, res) => {
 
     const passCrip = await bcrypt.hash(senha, 10);
 
+    let status = cargo_id != 4 ? 'Ativo' : 'Em aprovação';
+
     const newUser = {
       nome,
       email,
@@ -63,7 +65,7 @@ const insertUser = async (req, res) => {
       tipochave,
       senha: passCrip,
       cargo_id,
-      status: 'Em aprovação',
+      status,
     };
 
     const user = await knex('usuarios').insert(newUser).returning('*');

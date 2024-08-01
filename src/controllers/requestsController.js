@@ -43,6 +43,7 @@ const addRequest = async (req, res) => {
     estado,
     complemento,
     formaenvio,
+    nomecliente,
   } = req.body;
   const valorfrete = parseFloat(req.body.valorfrete) || 0;
   const admins = await knex('usuarios').where('cargo_id', 1);
@@ -201,6 +202,7 @@ const addRequest = async (req, res) => {
       mercadopago_id: response.id,
       linkpagamento: response.init_point,
       formaenvio,
+      nomecliente: nomecliente ?? '',
     };
 
     const request = await knex('pedidos').insert(newRequest).returning('*');
@@ -232,6 +234,7 @@ const addRequest = async (req, res) => {
       link: response.init_point,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
