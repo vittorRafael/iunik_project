@@ -18,8 +18,8 @@ const checkLogin = async (req, res, next) => {
       return res.status(401).json({
         error: 'Sua sessão terminou, por favor efetue novamente seu login.',
       });
-
-    if (userLogged.status != 'Ativo')
+    console.log(existUser[0].status);
+    if (existUser[0].status != 'ativo')
       return res.status(401).json({
         error: 'Seu usuário não está ativo, tente novamente!.',
       });
