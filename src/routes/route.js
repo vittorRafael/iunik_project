@@ -15,12 +15,14 @@ const addressRoutes = require('./addressRoutes');
 const productsController = require('../controllers/productsController');
 const categoryController = require('../controllers/categoryController');
 const carrosselController = require('../controllers/carrosselController');
+const addressController = require('../controllers/addressController');
 
 router.use(positionRoutes);
 router.use(mercadoPagoRoutes);
 router.get('/produtos/:id', productsController.listProducts);
 router.get('/categorias', categoryController.listCategorys);
 router.get('/carrossel/:id', carrosselController.listCarrossel);
+router.post('/endereco', addressController.addAddress);
 router.use(userRoutes);
 router.use(categoryRoutes);
 router.use(consultRoutes);
