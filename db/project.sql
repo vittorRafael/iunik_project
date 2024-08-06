@@ -72,6 +72,7 @@ create table pedidos (
   produtos_ids int array not null,
   linkPagamento text null,
   mercadopago_id text null,
+  nomeCliente text null,
   formapag_id int null references formaspagamento(id),
   cliente_id int not null references usuarios(id),
   consultor_id int not null references usuarios(id)
@@ -109,7 +110,7 @@ create table produtos (
   largura decimal null,
   profundidade decimal null,
   imagens text array null,
-  categoria_id int not null references categorias(id)
+  categoria_ids int array not null
 );
 
 create table consultor_produtos(

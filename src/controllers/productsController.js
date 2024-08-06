@@ -1,8 +1,13 @@
 const knex = require('../config/connect');
 const fs = require('fs');
 
+const categoriasExistem = async (categoriaIds) => {
+  const categorias = await knex('categorias').whereIn('id', categoriaIds);
+  return categorias.length === categoriaIds.length;
+};
+
 const addProduct = async (req, res) => {
-  const { nome, descricao, categoria_id } = req.body;
+  const { nome, descricao, categoria_ids } = req.body;
   const valorvenda = parseFloat(req.body.valorvenda);
   const valormin = parseFloat(req.body.valormin);
   const valormax = parseFloat(req.body.valormax);
@@ -17,14 +22,22 @@ const addProduct = async (req, res) => {
     !valormin ||
     !nome ||
     !descricao ||
-    !categoria_id
+    !categoria_ids ||
+    !Array.isArray(categoria_ids) ||
+    categoria_ids.length === 0
   )
     return res.status(400).json({ error: 'Preencha todos os campos!' });
 
   try {
-    const category = await knex('categorias').where('id', categoria_id);
-    if (category.length === 0)
-      return res.status(404).json({ error: 'Categoria não encontrada!' });
+    const categoriasValidas = await categoriasExistem(categoria_ids);
+
+    if (!categoriasValidas) {
+      return res.status(400).json({ error: 'Uma ou mais categorias fornecidas não existem.' });
+    }
+
+    if (!categoria_ids.every(Number.isInteger)) {
+      return res.status(400).json({ error: 'Categorias não identificadas, tente novamente.' });
+    }
 
     if (valorvenda < valormin)
       return res.status(404).json({
@@ -47,7 +60,7 @@ const addProduct = async (req, res) => {
       peso: peso.toFixed(2),
       largura: largura.toFixed(2),
       profundidade: profundidade.toFixed(2),
-      categoria_id,
+      categoria_ids,
     };
 
     const product = await knex('produtos').insert(newProduct).returning('*');
@@ -56,6 +69,7 @@ const addProduct = async (req, res) => {
       idProduct: product[0].id,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -96,7 +110,7 @@ const editProduct = async (req, res) => {
     if (product.length === 0)
       return res.status(404).json({ error: 'Produto não encontrado!' });
 
-    const { nome, descricao, categoria_id } = req.body;
+    const { nome, descricao, categoria_ids } = req.body;
     let valorvenda = parseFloat(req.body.valorvenda);
     let valormin = parseFloat(req.body.valormin);
     let valormax = parseFloat(req.body.valormax);
@@ -115,16 +129,24 @@ const editProduct = async (req, res) => {
       !peso &&
       !largura &&
       !profundidade &&
-      !categoria_id
+      !categoria_ids
     )
       return res.status(400).json({ error: 'Nenhuma alteração encontrada!' });
 
-    if (categoria_id) {
-      const category = await knex('categorias').where('id', categoria_id);
-      if (category.length === 0)
-        return res.status(404).json({ error: 'Categoria não encontrada!' });
-    }
+    if (categoria_ids && categoria_ids.length === 0) 
+        return res.status(400).json({ error: 'Informe pelo menos uma categoria para o produto!' });
 
+    if (categoria_ids && !categoria_ids.every(Number.isInteger))
+        return res.status(400).json({ error: 'Todas as categorias devem ser números inteiros.' });
+
+    if(categoria_ids) {
+      const categoriasValidas = await categoriasExistem(categoria_ids);
+
+      if (!categoriasValidas) 
+        return res.status(400).json({ error: 'Uma ou mais categorias fornecidas não existem.' });
+    }
+        
+    
     valorvenda = req.body.valorvenda
       ? parseFloat(valorvenda).toFixed(2)
       : parseFloat(product[0].valorvenda);
@@ -166,13 +188,14 @@ const editProduct = async (req, res) => {
       peso,
       largura,
       profundidade,
-      categoria_id: categoria_id ?? product[0].categoria_id,
+      categoria_ids: categoria_ids ?? product[0].categoria_ids,
     };
 
     await knex('produtos').where('id', id).update(data).returning('*');
 
     return res.status(200).json({ success: 'Produto atualizado com sucesso!' });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
