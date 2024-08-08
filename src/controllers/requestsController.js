@@ -69,6 +69,7 @@ const addRequest = async (req, res) => {
   )
     return res.status(400).json({ error: 'Preencha todos os campos!' });
   try {
+    const ids = produtos_ids.map(produto => produto.id);
     const existConsult = await knex('usuarios')
       .where('id', user_id)
       .where('cargo_id', 4);
@@ -82,18 +83,17 @@ const addRequest = async (req, res) => {
           .json({ error: 'O cliente não existe, tente novamente!' });
 
       cliente_id = user_id;
-
       const products = await knex('produtos')
         .select('*')
-        .whereIn('id', produtos_ids)
+        .whereIn('id', ids)
         .where('inativo', false);
 
-      if (products.length !== produtos_ids.length)
+      if (products.length !== ids.length)
         return res
           .status(400)
           .json({ error: 'Produto selecionado não existe, tente novamente!' });
 
-      products.forEach(async (product) => {
+      products.forEach(async (product, i) => {
         valor += parseFloat(product.valorvenda);
         items.push({
           id: product.id,
@@ -102,7 +102,7 @@ const addRequest = async (req, res) => {
           picture_url: product.imagens ? product.imagens[0] : '',
           description: product.descricao,
           category_id: product.categoria_id,
-          quantity: 1,
+          quantity: produtos_ids[i].quantidade,
           unit_price: parseFloat(product.valorvenda),
         });
       });
@@ -111,23 +111,23 @@ const addRequest = async (req, res) => {
 
       const products = await knex('consultor_produtos')
         .select(['*', 'consultor_produtos.id'])
-        .whereIn('consultor_produtos.produto_id', produtos_ids)
+        .whereIn('consultor_produtos.produto_id', ids)
         .where('produtos.inativo', false)
         .where('consultor_produtos.consultor_id', consultor_id)
         .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id');
-      if (products.length !== produtos_ids.length) {
+      if (products.length !== ids.length) {
         products.forEach((product) => {
-          if (produtos_ids.includes(product.produto_id)) {
-            const index = produtos_ids.indexOf(product.produto_id);
-            produtos_ids.splice(index, 1);
+          if (ids.includes(product.produto_id)) {
+            const index = ids.indexOf(product.produto_id);
+            ids.splice(index, 1);
           }
         });
         const productsGeneral = await knex('produtos')
           .select('*')
-          .whereIn('id', produtos_ids)
+          .whereIn('id', ids)
           .where('inativo', false);
 
-        if (productsGeneral.length !== produtos_ids.length)
+        if (productsGeneral.length !== ids.length)
           return res.status(400).json({
             error: 'Produto selecionado não existe, tente novamente!',
           });
@@ -137,9 +137,10 @@ const addRequest = async (req, res) => {
         });
       }
       products.forEach(async (product) => {
+        const index = produtos_ids.findIndex(produto => produto.id === product.produto_id);
         if (product.valorconsult) {
-          valorconsult += parseFloat(product.valorconsult);
-          valor += parseFloat(product.valortotal);
+          valorconsult += parseFloat(product.valorconsult) * produtos_ids[index].quantidade;
+          valor += parseFloat(product.valortotal) * produtos_ids[index].quantidade;
           items.push({
             id: product.id,
             title: product.nome,
@@ -147,12 +148,12 @@ const addRequest = async (req, res) => {
             picture_url: product.imagens ? product.imagens[0] : '',
             description: product.descricao,
             category_id: product.categoria_id,
-            quantity: 1,
+            quantity: produtos_ids[index].quantidade,
             unit_price: parseFloat(product.valortotal),
           });
         } else {
-          valorconsult += 1.0;
-          valor += parseFloat(product.valormin);
+          valorconsult += 1.0 * produtos_ids[index].quantidade;
+          valor += parseFloat(product.valormin) * produtos_ids[index].quantidade;
           items.push({
             id: product.id,
             title: product.nome,
@@ -160,7 +161,7 @@ const addRequest = async (req, res) => {
             picture_url: product.imagens ? product.imagens[0] : '',
             description: product.descricao,
             category_id: product.categoria_id,
-            quantity: 1,
+            quantity: produtos_ids[index].quantidade,
             unit_price: parseFloat(product.valormin),
           });
         }
@@ -190,7 +191,7 @@ const addRequest = async (req, res) => {
       valorfrete: valorfrete.toFixed(2),
       consultor_id,
       cliente_id,
-      produtos_ids,
+      produtos_ids: JSON.stringify(produtos_ids),
       modelo,
       rua,
       numero,
@@ -206,6 +207,9 @@ const addRequest = async (req, res) => {
     };
 
     const request = await knex('pedidos').insert(newRequest).returning('*');
+    const totalQuantidade = produtos_ids.reduce((soma, produto) => {
+      return soma + produto.quantidade;
+    }, 0);
 
     admins.forEach((admin) => {
       mailer.sendMail(
@@ -215,7 +219,7 @@ const addRequest = async (req, res) => {
           template: './addRequest',
           subject: `(BIODERMIS) - Pedido n° ${request[0].id}`,
           context: {
-            qtdProdutos: produtos_ids.length,
+            qtdProdutos: totalQuantidade,
             valor: valor.toFixed(2),
             id: request[0].id,
           },
