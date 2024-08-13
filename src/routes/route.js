@@ -20,6 +20,7 @@ const addressController = require('../controllers/addressController');
 router.use(positionRoutes);
 router.use(mercadoPagoRoutes);
 router.get('/produtos/:id', productsController.listProducts);
+router.get('/maisvendidos', productsController.getTop5ProdutosMaisVendidos)
 router.get('/categorias', categoryController.listCategorys);
 router.get('/carrossel/:id', carrosselController.listCarrossel);
 router.post('/endereco', addressController.addAddress);

@@ -14,6 +14,6 @@ router.post(
 );
 
 router.delete('/produtos/fotos/:id', productsController.removeImgProd);
-router.get('/maisvendidos', productsController.getTop5ProdutosMaisVendidos)
+
 
 module.exports = router;
