@@ -303,6 +303,47 @@ const removeImgProd = async (req, res) => {
   }
 };
 
+
+const getTop5ProdutosMaisVendidos = async (req, res) => {
+  try {
+      const pedidos = await knex('pedidos').select('produtos_ids');
+
+      const produtosCount = {};
+
+
+      pedidos.forEach(pedido => {
+
+          const produtos = pedido.produtos_ids; 
+
+          produtos.forEach(produto => {
+              const { id, quantidade } = produto;
+
+              if (produtosCount[id]) {
+                  produtosCount[id] += quantidade;
+              } else {
+                  produtosCount[id] = quantidade;
+              }
+          });
+      });
+
+      const topProdutos = Object.entries(produtosCount)
+          .map(([id, quantidade]) => ({ id, quantidade }))
+          .sort((a, b) => b.quantidade - a.quantidade)
+          .slice(0, 5);
+
+      const {id: idLancamentos} = await knex('categorias').where('categoria', 'Lançamentos').first()
+      const lancamentos = await knex('produtos').whereRaw('categoria_ids @> ARRAY[?]::integer[]', [idLancamentos]).select("*")
+
+      const {id: idPromocoes} = await knex('categorias').where('categoria', 'Promoções').first()
+      const promocoes = await knex('produtos').whereRaw('categoria_ids @> ARRAY[?]::integer[]', [idPromocoes]).select("*")
+
+      return res.status(200).json({maisVendidos: topProdutos, lancamentos, promocoes});
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: 'Erro no servidor!' });
+  }
+};
+
 module.exports = {
   addProduct,
   listProducts,
@@ -311,4 +352,5 @@ module.exports = {
   listProductsConsult,
   addImgProd,
   removeImgProd,
+  getTop5ProdutosMaisVendidos
 };

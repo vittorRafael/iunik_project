@@ -32,8 +32,8 @@ create table usuarios (
   cargo_id int not null references cargos(id)
 );
 
-insert into usuarios (nome, cpf, email, telefone, senha, cargo_id) values (
-	'BIODERMIS', '00000000000', 'adminbiodermis@biodermis.com', '00000000000', 'admin123', 1
+insert into usuarios (nome, cpf, email, telefone, senha, cargo_id, status) values (
+	'BIODERMIS', '00000000001', 'adminbiodermis1@biodermis.com', '00000000000', 'admin123', 1, 'Ativo'
 );
 
 create table formaspagamento (
@@ -69,7 +69,7 @@ create table pedidos (
   consultPago boolean default false,
   saldodisp boolean default false,
   resto decimal default 0.0,
-  produtos_ids int array not null,
+  produtos_ids JSONB not null,
   linkPagamento text null,
   mercadopago_id text null,
   nomeCliente text null,
@@ -94,6 +94,9 @@ create table categorias (
 	id serial primary key,
   categoria text not null
 );
+
+insert into categorias (categoria) values ('Lançamentos');
+insert into categorias (categoria) values ('Promoções');
 
 create table produtos (
 	id serial primary key,
