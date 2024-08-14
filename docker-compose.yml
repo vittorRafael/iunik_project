@@ -47,6 +47,8 @@ services:
       MAIL_USER: ${MAIL_USER}
       MAIL_PASS: ${MAIL_PASS}
       ACCESS_TOKEN: ${ACCESS_TOKEN}
+    volumes:
+      - ./uploads:/app/uploads
     depends_on:
       - database
 
