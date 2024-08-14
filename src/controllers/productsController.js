@@ -329,7 +329,6 @@ const getTop5ProdutosMaisVendidos = async (req, res) => {
       const topProdutos = Object.entries(produtosCount)
           .map(([id, quantidade]) => ({ id, quantidade }))
           .sort((a, b) => b.quantidade - a.quantidade)
-          .slice(0, 5);
 
       const {id: idLancamentos} = await knex('categorias').where('categoria', 'Lançamentos').first()
       const lancamentos = await knex('produtos').whereRaw('categoria_ids @> ARRAY[?]::integer[]', [idLancamentos]).select("*")
@@ -337,7 +336,14 @@ const getTop5ProdutosMaisVendidos = async (req, res) => {
       const {id: idPromocoes} = await knex('categorias').where('categoria', 'Promoções').first()
       const promocoes = await knex('produtos').whereRaw('categoria_ids @> ARRAY[?]::integer[]', [idPromocoes]).select("*")
 
-      return res.status(200).json({maisVendidos: topProdutos, lancamentos, promocoes});
+      const arrayDeIds = topProdutos.map(produto => produto.id);
+      let produtos = await knex('produtos').whereIn('id', arrayDeIds)
+      if (produtos.length === 0) {
+        produtos = await knex('produtos').select('*')
+      }
+      produtos.slice(0,5)
+
+      return res.status(200).json({maisVendidos: produtos, lancamentos, promocoes});
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
