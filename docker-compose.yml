@@ -1,3 +1,7 @@
+volumes:
+  nginx_certs:
+    driver: local
+
 services:
   database:
     image: postgres:12
@@ -63,3 +67,4 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
       - api
+      - nginx_certs:/etc/letsencrypt
