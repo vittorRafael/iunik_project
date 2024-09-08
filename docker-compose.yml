@@ -20,7 +20,8 @@ services:
     volumes:
       - database-data:/var/lib/postgresql/data
       - ./db/project.sql:/docker-entrypoint-initdb.d/init.sql
-    memswap_limit: 1g
+    mem_limit: 1g               # Limita a memória física a 1GB
+    memswap_limit: 1g           # Define o total de memória + swap para 1gB
     networks:
       - iuniket
 
@@ -34,7 +35,8 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    memswap_limit: 1g
+    mem_limit: 1g               # Limita a memória física a 1GB
+    memswap_limit: 1g           # Define o total de memória + swap para 1gB
     depends_on:
       - database
     networks:
@@ -58,7 +60,8 @@ services:
       MAIL_USER: ${MAIL_USER}
       MAIL_PASS: ${MAIL_PASS}
       ACCESS_TOKEN: ${ACCESS_TOKEN}
-    memswap_limit: 1g
+    mem_limit: 1g               # Limita a memória física a 1GB
+    memswap_limit: 1g           # Define o total de memória + swap para 1gB
     volumes:
       - ./uploads:/app/uploads
     depends_on:
@@ -73,7 +76,8 @@ services:
       - .env
     environment:
       VITE_API_URL: ${VITE_API_URL}
-    memswap_limit: 1g
+    mem_limit: 1g               # Limita a memória física a 1GB
+    memswap_limit: 1g           # Define o total de memória + swap para 1gB
     depends_on:
       - backend
     networks:
