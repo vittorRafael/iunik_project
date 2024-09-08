@@ -60,6 +60,7 @@ services:
       MAIL_USER: ${MAIL_USER}
       MAIL_PASS: ${MAIL_PASS}
       ACCESS_TOKEN: ${ACCESS_TOKEN}
+      CORS_ORIGIN: ${CORS_ORIGIN}
     mem_limit: 1g               # Limita a memória física a 1GB
     memswap_limit: 1g           # Define o total de memória + swap para 1gB
     volumes:
