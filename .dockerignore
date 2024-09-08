@@ -1,8 +1,11 @@
 .env
 .env.example
 .gitignore
-.git/
-node_modules/
+/.git
+/node_modules
+/frontend
+/db
+/bkp
 README.md
-db/
-database/
+docker-compose.yml
+nginx.conf
