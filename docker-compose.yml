@@ -75,7 +75,7 @@ services:
     env_file:
       - .env
     environment:
-      VITE_API_URL: ${VITE_API_URL}
+      VITE_API_URL: 'http://backend:3000'
     mem_limit: 1g               # Limita a memória física a 1GB
     memswap_limit: 1g           # Define o total de memória + swap para 1gB
     depends_on:
