@@ -1,4 +1,3 @@
-
 create table cargos (
 	id serial primary key,
   funcao text not null

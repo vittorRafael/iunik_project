@@ -1,18 +1,28 @@
+networks:
+  iuniket:
+    driver: bridge
+    name: iuniket
+
+volumes:
+  database-data:
+    driver: local
+
 services:
   database:
     image: postgres:12
     restart: always
-    ports:
-      - ${DB_PORT}:${DB_PORT}
     env_file:
       - .env
     environment:
       POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: postgres
     volumes:
-      - ./database:/var/lib/postgresql/data
+      - database-data:/var/lib/postgresql/data
       - ./db/project.sql:/docker-entrypoint-initdb.d/init.sql
+    memswap_limit: 1g
+    networks:
+      - iuniket
 
   pgadmin:
     image: dpage/pgadmin4
@@ -24,21 +34,22 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    memswap_limit: 1g
     depends_on:
       - database
+    networks:
+      - iuniket
 
-  api:
+  backend:
     build: .
     restart: always
-    ports:
-      - ${API_PORT}:${API_PORT}
     env_file:
       - .env
     environment:
       PORT: ${API_PORT}
       DB_HOST: ${DB_HOST}
       DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASSWORD}
+      DB_PASS: ${DB_PASS}
       DB_NAME: ${DB_NAME}
       JWT_PASS: ${JWT_PASS}
       FROM_MAIL: ${FROM_MAIL}
@@ -47,19 +58,38 @@ services:
       MAIL_USER: ${MAIL_USER}
       MAIL_PASS: ${MAIL_PASS}
       ACCESS_TOKEN: ${ACCESS_TOKEN}
+    memswap_limit: 1g
     volumes:
       - ./uploads:/app/uploads
     depends_on:
       - database
+    networks:
+      - iuniket
+
+  frontend:
+    build: ./frontend
+    restart: always
+    env_file:
+      - .env
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+    memswap_limit: 1g
+    depends_on:
+      - backend
+    networks:
+      - iuniket
 
   proxy:
     image: nginx:latest
     restart: always
-    ports:
-      - 80:80
     env_file:
       - .env
+    ports:
+      - ${PROXY_PORT}:80
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
-      - api
+      - frontend
+      - backend
+    networks:
+      - iuniket
