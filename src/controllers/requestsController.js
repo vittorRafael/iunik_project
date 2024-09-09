@@ -139,18 +139,33 @@ const addRequest = async (req, res) => {
       products.forEach(async (product) => {
         const index = produtos_ids.findIndex(produto => produto.id === product.produto_id);
         if (product.valorconsult) {
-          valorconsult += parseFloat(product.valorconsult) * produtos_ids[index].quantidade;
-          valor += parseFloat(product.valortotal) * produtos_ids[index].quantidade;
-          items.push({
-            id: product.id,
-            title: product.nome,
-            currency_id: 'BRL',
-            picture_url: product.imagens ? product.imagens[0] : '',
-            description: product.descricao,
-            category_id: product.categoria_id,
-            quantity: produtos_ids[index].quantidade,
-            unit_price: parseFloat(product.valortotal),
+          if(modelo.toLowerCase() === 'abastecimento') {
+            valorconsult += parseFloat(product.valormin) * produtos_ids[index].quantidade;
+            valor += parseFloat(product.valormin) * produtos_ids[index].quantidade;
+            items.push({
+              id: product.id,
+              title: product.nome,
+              currency_id: 'BRL',
+              picture_url: product.imagens ? product.imagens[0] : '',
+              description: product.descricao,
+              category_id: product.categoria_id,
+              quantity: produtos_ids[index].quantidade,
+              unit_price: parseFloat(product.valormin),
+            });
+          } else {
+            valorconsult += parseFloat(product.valorconsult) * produtos_ids[index].quantidade;
+            valor += parseFloat(product.valortotal) * produtos_ids[index].quantidade;
+            items.push({
+              id: product.id,
+              title: product.nome,
+              currency_id: 'BRL',
+              picture_url: product.imagens ? product.imagens[0] : '',
+              description: product.descricao,
+              category_id: product.categoria_id,
+              quantity: produtos_ids[index].quantidade,
+              unit_price: parseFloat(product.valortotal),
           });
+          }
         } else {
           valorconsult += 1.0 * produtos_ids[index].quantidade;
           valor += parseFloat(product.valormin) * produtos_ids[index].quantidade;

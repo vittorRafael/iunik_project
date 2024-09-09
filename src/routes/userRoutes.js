@@ -26,6 +26,8 @@ router.post(
   userController.addCert,
 );
 
+router.get('/perfil', userController.getProfile);
+
 // Verificar usuario ativo
 router.use(checkActivate)
 
@@ -38,7 +40,7 @@ router.patch('/usuarios/:id', userController.updateUsers);
 router.delete('/perfil/foto', userController.removeImg);
 
 router.delete('/perfil/certificado', userController.removeCert);
-router.get('/perfil', userController.getProfile);
+
 router.patch('/perfil', userController.updateProfile);
 
 module.exports = router;

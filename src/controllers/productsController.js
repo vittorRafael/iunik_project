@@ -39,13 +39,13 @@ const addProduct = async (req, res) => {
       return res.status(400).json({ error: 'Categorias não identificadas, tente novamente.' });
     }
 
-    if (valorvenda < valormin)
-      return res.status(404).json({
+    if (parseFloat(valorvenda) < parseFloat(valormin))
+      return res.status(400).json({
         error:
           'O valor da venda não pode ser menor que o valor mínimo do produto!',
       });
-    if (valorvenda > valormax)
-      return res.status(404).json({
+    if (parseFloat(valorvenda) > parseFloat(valormax))
+      return res.status(400).json({
         error:
           'O valor da venda não pode ser maior que o valor máximo do produto!',
       });
@@ -167,13 +167,13 @@ const editProduct = async (req, res) => {
       ? parseFloat(profundidade).toFixed(2)
       : product[0].profundidade;
 
-    if (valorvenda < valormin)
-      return res.status(404).json({
+      if (parseFloat(valorvenda) < parseFloat(valormin))
+      return res.status(400).json({
         error:
           'O valor da venda não pode ser menor que o valor mínimo do produto!',
       });
-    if (valorvenda > valormax)
-      return res.status(404).json({
+      if (parseFloat(valorvenda) > parseFloat(valormax))
+      return res.status(400).json({
         error:
           'O valor da venda não pode ser maior que o valor máximo do produto!',
       });
