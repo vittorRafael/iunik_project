@@ -102,6 +102,7 @@ const insertUser = async (req, res) => {
       .status(200)
       .json({ success: 'Usuário cadastrado com sucesso!', id: user[0].id });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };

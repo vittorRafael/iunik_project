@@ -12,13 +12,17 @@
     {
       "url": "http://localhost:3000",
       "description": "API de test"
+    },
+    {
+      "url": "http://85.31.61.50:3000",
+      "description": "API produção"
     }
   ],
   "paths": {
     "/usuarios": {
       "post": {
         "summary": "Cadastro de usuário",
-        "description": "Essa rota será responsável por cadastrar um novo usuário.",
+        "description": "Essa rota será responsável por cadastrar um novo usuário. Para isso precisamos de algum cargo cadastrado na tabela de cargos, passando o id do cargo referido para esse usuário.",
         "tags": ["Usuarios"],
         "requestBody": {
           "content": {
@@ -63,6 +67,7 @@
       "get": {
         "summary": "Listar usuários",
         "description": "Essa rota será responsável por listar um ou mais usuários.",
+        "security": [{ "bearerAuth": [] }],
         "tags": ["Usuarios"],
         "parameters": [
           {
@@ -73,6 +78,7 @@
           }
         ],
         "responses": {
+          "401": { "description": "Sem autorização!" },
           "404": { "description": "Não Encontrado!" },
           "500": { "description": "Erro no servidor!" },
           "200": { "description": "OK" }
@@ -135,7 +141,7 @@
     "/alterar_senha": {
       "post": {
         "summary": "Alterar a senha",
-        "description": "Essa rota será responsável por alterar a senha esquecida do usuário.",
+        "description": "Essa rota será responsável por alterar a senha esquecida do usuário. Enviando o token que foi recebido por email, será possível cadastrar sua nova senha.",
         "tags": ["Usuarios"],
         "requestBody": {
           "content": {
@@ -163,7 +169,7 @@
     "/perfil": {
       "get": {
         "summary": "Obter perfil do usuário",
-        "description": "Essa rota será responsável por listar um ou mais usuários.",
+        "description": "Essa rota será responsável por mostrar o perfil do usuário logado.",
         "security": [{ "bearerAuth": [] }],
         "tags": ["Usuarios"],
         "responses": {
@@ -212,17 +218,6 @@
           "200": {
             "description": "Usuário atualizado com sucesso!"
           }
-        }
-      },
-      "delete": {
-        "summary": "Deletar perfil do usuário logado",
-        "description": "Essa rota será responsável por deletar o usuário que está logado.",
-        "security": [{ "bearerAuth": [] }],
-        "tags": ["Usuarios"],
-        "responses": {
-          "404": { "description": "Não Encontrado!" },
-          "500": { "description": "Erro no servidor!" },
-          "200": { "description": "OK" }
         }
       }
     },
@@ -309,7 +304,7 @@
     "/produtos": {
       "post": {
         "summary": "Cadastro de produtos",
-        "description": "Essa rota será responsável por cadastrar um novo produto.",
+        "description": "Essa rota será responsável por cadastrar um novo produto. Para isso, precisa-se do id de uma ou mais categorias cadastradas na tabela categorias. O campo valormin corresponde ao valor mínimo de venda do produto. O campo valormax corresponde ao valor máximo de venda do produto. O campo valorvenda corresponde ao preço que o irá vendar o produto.",
         "tags": ["Produtos"],
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
@@ -321,17 +316,19 @@
               "examples": {
                 "produto": {
                   "value": {
-                    "nome": "Teclado Mecânico",
-                    "descricao": "Teclado Mecânico da Marca X, leve, etc.",
-                    "valormin": 99.99,
-                    "valormax": 299.99,
-                    "valorvenda": 199.99,
-                    "altura": 10,
-                    "peso": 170,
-                    "largura": 100,
-                    "profundidade": 40,
-                    "categoria_id": 1
-                  }
+                    "categoria_ids": [
+                      52
+                    ],
+                    "nome": "ELIXIR DE TRATAMENTO BIOEYES - 60 G",
+                    "descricao": "teste",
+                    "valorvenda": "1",
+                    "valormin": "0.50",
+                    "valormax": "1.50",
+                    "peso": "70",
+                    "profundidade": "4",
+                    "largura": "2",
+                    "altura": "4"
+                }
                 }
               }
             }
@@ -389,17 +386,19 @@
               "examples": {
                 "produto": {
                   "value": {
-                    "nome": "Teclado Mecânico",
-                    "descricao": "Teclado Mecânico da Marca X, leve, etc.",
-                    "valormin": 99.99,
-                    "valormax": 299.99,
-                    "valorvenda": 199.99,
-                    "altura": 10,
-                    "peso": 170,
-                    "largura": 100,
-                    "profundidade": 40,
-                    "categoria_id": 1
-                  }
+                    "categoria_ids": [
+                      52
+                    ],
+                    "nome": "ELIXIR DE TRATAMENTO BIOEYES - 60 G",
+                    "descricao": "teste",
+                    "valorvenda": "1",
+                    "valormin": "0.50",
+                    "valormax": "1.50",
+                    "peso": "70",
+                    "profundidade": "4",
+                    "largura": "2",
+                    "altura": "4"
+                }
                 }
               }
             }
@@ -646,7 +645,7 @@
       },
       "patch": {
         "summary": "Status consultor",
-        "description": "Essa rota será responsável por mudar o status de um consultor pelo ID.",
+        "description": "Essa rota será responsável por mudar o status de um consultor pelo ID. Enviando 'opt':1 será adicionado o status Ativo ao consultor. Enviando 'opt':2 será adicionado o status Em Aprovação. Enviando 'opt':3 será adicionado o status Inativo.",
         "tags": ["Consultores"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -696,7 +695,7 @@
     "/consultor/produtos/{id}": {
       "post": {
         "summary": "Adicionar produto na lista do consultor",
-        "description": "Essa rota será responsável por adicionar um novo produto a lista do consultor logado.",
+        "description": "Essa rota será responsável por adicionar um novo produto a lista do consultor logado. O valorprod terá que ser maior que o valor mínimo e menor que o valor máximo do produto.",
         "tags": ["Consultores"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -734,7 +733,7 @@
       },
       "patch": {
         "summary": "Editar produto do consultor",
-        "description": "Essa rota será responsável por editar valor do produto de um consultor pelo ID.",
+        "description": "Essa rota será responsável por editar valor do produto de um consultor pelo ID. O valorprod terá que ser maior que o valor mínimo e menor que o valor máximo do produto.",
         "tags": ["Consultores"],
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -793,7 +792,7 @@
     "/pedidos": {
       "post": {
         "summary": "Cadastro de pedidos",
-        "description": "Essa rota será responsável por cadastrar um novo pedido.",
+        "description": "Essa rota será responsável por cadastrar um novo pedido. Obs para modelo venda: Caso o usuário logado seja um cliente, basta mandar os ids dos produtos cadastrados que irá somar tudo e cadastrar um novo pedido. Caso o usuário seja um consultor, deve se atentar que o valor dos produtos que o consultor tem em seu nome irá pegar o valorconsult que foi cadastrado. Caso tenha enviado algum produto que não esteja cadastrado na lista do consultor, irá pegar o valor mínimo do produto.",
         "tags": ["Pedidos"],
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
@@ -805,16 +804,17 @@
               "examples": {
                 "produto": {
                   "value": {
-                    "produtos_ids": [1],
-                    "valorfrete": 100,
-                    "modelo": "venda",
+                    "produtos_ids": [{"id": 325, "quantidade": 1}],
+	                  "valorfrete": 10,
+	                  "modelo": "venda",
                     "rua": "Rua teste",
                     "numero": "S/N",
                     "bairro": "Teste",
                     "cep": "00000000",
                     "cidade": "Teste",
                     "estado": "CE",
-                    "complemento": "Teste"
+                    "complemento": "Teste",
+                    "formaenvio": "Sedex"
                   }
                 }
               }
@@ -883,7 +883,10 @@
                     "cidade": "Teste",
                     "estado": "CE",
                     "complemento": "Teste",
-                    "modelo": "compra"
+                    "modelo": "compra",
+                    "dataenvio": "01/01/2025",
+                    "formaenvio": "Sedex",
+                    "codigorastrio": "AAAAAAAA55"
                   }
                 }
               }
@@ -946,7 +949,7 @@
     "/saques": {
       "post": {
         "summary": "Cadastro de saque",
-        "description": "Essa rota será responsável por cadastrar uma nova solicitação de saque.",
+        "description": "Essa rota será responsável por cadastrar uma nova solicitação de saque. O consultor só poderá fazer um saque quando seu saldo estiver disponível.",
         "tags": ["Saques"],
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
@@ -1051,6 +1054,20 @@
           "200": { "description": "OK" }
         }
       }
+    },
+    "/movimentacoes": {
+      "get": {
+        "summary": "Listar movimentações de saque e pagamentos",
+        "description": "Essa rota será responsável por listar as movimentações referentes a dinheiro, como saques e pagamentos de pedidos.",
+        "tags": ["Movimentações"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "400": { "description": "Verifique os campos e tente novamente!" },
+          "404": { "description": "Não Encontrado!" },
+          "500": { "description": "Erro no servidor!" },
+          "200": { "description": "OK" }
+        }
+      }
     }
   },
   "components": {
@@ -1091,6 +1108,15 @@
             "type": "string"
           },
           "conta": {
+            "type": "string"
+          },
+          "banco": {
+            "type": "string"
+          },
+          "tipochave": {
+            "type": "string"
+          },
+          "status": {
             "type": "string"
           },
           "pix": {
