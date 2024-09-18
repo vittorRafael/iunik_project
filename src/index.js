@@ -15,11 +15,7 @@ app.use(express.json());
 // Middleware para parsing do corpo da requisição
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(cors({
-  origin: cors_origin,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.get('/uploads/:folder/:imageName', (req, res) => {
   const { folder, imageName } = req.params;

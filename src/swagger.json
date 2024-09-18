@@ -10,10 +10,6 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000",
-      "description": "API de test"
-    },
-    {
       "url": "http://85.31.61.50:3000",
       "description": "API produção"
     }
