@@ -34,7 +34,6 @@ const addRequest = async (req, res) => {
   const {
     formapag_id,
     produtos_ids,
-    modelo,
     rua,
     numero,
     bairro,
@@ -57,7 +56,6 @@ const addRequest = async (req, res) => {
 
   if (
     !produtos_ids ||
-    !modelo ||
     !rua ||
     !numero ||
     !bairro ||
@@ -72,7 +70,7 @@ const addRequest = async (req, res) => {
     const ids = produtos_ids.map(produto => produto.id);
     const existConsult = await knex('usuarios')
       .where('id', user_id)
-      .where('cargo_id', 4);
+      .where('cargo_id', 4); 
     if (existConsult.length === 0) {
       const existCliente = await knex('usuarios')
         .where('id', user_id)
@@ -137,35 +135,20 @@ const addRequest = async (req, res) => {
         });
       }
       products.forEach(async (product) => {
-        const index = produtos_ids.findIndex(produto => produto.id === product.produto_id);
+        const index = produtos_ids.findIndex(produto => produto.id === (product.produto_id ? product.produto_id : product.id));
         if (product.valorconsult) {
-          if(modelo.toLowerCase() === 'abastecimento') {
-            valorconsult += parseFloat(product.valormin) * produtos_ids[index].quantidade;
-            valor += parseFloat(product.valormin) * produtos_ids[index].quantidade;
-            items.push({
-              id: product.id,
-              title: product.nome,
-              currency_id: 'BRL',
-              picture_url: product.imagens ? product.imagens[0] : '',
-              description: product.descricao,
-              category_id: product.categoria_id,
-              quantity: produtos_ids[index].quantidade,
-              unit_price: parseFloat(product.valormin),
-            });
-          } else {
-            valorconsult += parseFloat(product.valorconsult) * produtos_ids[index].quantidade;
-            valor += parseFloat(product.valortotal) * produtos_ids[index].quantidade;
-            items.push({
-              id: product.id,
-              title: product.nome,
-              currency_id: 'BRL',
-              picture_url: product.imagens ? product.imagens[0] : '',
-              description: product.descricao,
-              category_id: product.categoria_id,
-              quantity: produtos_ids[index].quantidade,
-              unit_price: parseFloat(product.valortotal),
+          valorconsult += parseFloat(product.valorconsult) * produtos_ids[index].quantidade;
+          valor += parseFloat(product.valortotal) * produtos_ids[index].quantidade;
+          items.push({
+            id: product.id,
+            title: product.nome,
+            currency_id: 'BRL',
+            picture_url: product.imagens ? product.imagens[0] : '',
+            description: product.descricao,
+            category_id: product.categoria_id,
+            quantity: produtos_ids[index].quantidade,
+            unit_price: parseFloat(product.valortotal),
           });
-          }
         } else {
           valorconsult += 1.0 * produtos_ids[index].quantidade;
           valor += parseFloat(product.valormin) * produtos_ids[index].quantidade;
@@ -191,8 +174,8 @@ const addRequest = async (req, res) => {
       body: {
         items,
         back_urls: {
-          success: 'http://localhost:3000/mercadopagosuccess',
-          failure: 'http://localhost:3000/mercadopagofailure',
+          success: 'http://cpd-debaixo.ddns.net:33085/mercadopagosuccess',
+          failure: 'http://cpd-debaixo.ddns.net:33085/mercadopagofailure',
         },
         auto_return: 'approved',
       },
@@ -207,7 +190,7 @@ const addRequest = async (req, res) => {
       consultor_id,
       cliente_id,
       produtos_ids: JSON.stringify(produtos_ids),
-      modelo,
+      modelo: "venda",
       rua,
       numero,
       bairro,
@@ -226,6 +209,8 @@ const addRequest = async (req, res) => {
       return soma + produto.quantidade;
     }, 0);
 
+    let emailError = false;
+
     admins.forEach((admin) => {
       mailer.sendMail(
         {
@@ -241,12 +226,16 @@ const addRequest = async (req, res) => {
         },
         (err) => {
           if (err)
-            return res.status(400).json({
-              error: 'Não foi possível enviar o email, tente novamente!',
-            });
+            emailError = true
         },
       );
     });
+
+    if (emailError) {
+      return res.status(400).json({
+        error: 'Não foi possível enviar o email, tente novamente!',
+      });
+    }
 
     return res.status(200).json({
       success: 'Pedido cadastrado com sucesso!',
@@ -275,7 +264,6 @@ const editRequest = async (req, res) => {
       cidade,
       estado,
       complemento,
-      modelo,
       dataenvio,
       formaEnvio,
       codigoRastreio,
@@ -291,7 +279,6 @@ const editRequest = async (req, res) => {
       !cidade &&
       !complemento &&
       !estado &&
-      !modelo &&
       !codigoRastreio &&
       !dataenvio &&
       !formaEnvio
@@ -339,6 +326,7 @@ const editRequest = async (req, res) => {
       client = await knex('usuarios').where('id', request[0].cliente_id);
 
     if (codigoRastreio && dataenvio && formaEnvio) {
+      let emailError = false;
       mailer.sendMail(
         {
           to: client[0].email,
@@ -354,11 +342,15 @@ const editRequest = async (req, res) => {
         },
         (err) => {
           if (err)
-            return res.status(400).json({
-              error: 'Não foi possível enviar o email, tente novamente!',
-            });
+            emailError = true
         },
       );
+
+      if (emailError) {
+        return res.status(400).json({
+          error: 'Não foi possível enviar o email, tente novamente!',
+        });
+      }
     } else if (
       codigoRastreio &&
       dataenvio &&
@@ -382,7 +374,6 @@ const editRequest = async (req, res) => {
       cidade: cidade ?? request[0].cidade,
       estado: estado ?? request[0].estado,
       complemento: complemento ?? request[0].complemento,
-      modelo: modelo ?? request[0].modelo,
     };
 
     await knex('pedidos').where('id', id).update(data).returning('*');
@@ -422,14 +413,10 @@ const balanceAvailable = async (req, res) => {
     const requests = await knex('pedidos')
       .where('consultpago', false)
       .where('saldodisp', false);
-
+    let consultor_id = 0
     requests.forEach(async (request) => {
       const today = dataAtualFormatada();
-      const res = await knex('usuarios')
-        .select('valordispsaque')
-        .where('id', request.consultor_id);
-      const valordispsaque =
-        parseFloat(res[0].valordispsaque) + parseFloat(request.valorconsult);
+      consultor_id = request.consultor_id
       if (
         (request.formapag_id === 1 ||
           request.formapag_id === 3 ||
@@ -440,11 +427,6 @@ const balanceAvailable = async (req, res) => {
         await knex('pedidos')
           .update({ saldodisp: true })
           .where('id', request.id);
-        await knex('usuarios')
-          .update({
-            valordispsaque: valordispsaque.toFixed(2),
-          })
-          .where('id', request.consultor_id);
       } else if (
         request.formapag_id === 2 &&
         compararDatas(today, request.datapedido, 30) &&
@@ -453,13 +435,30 @@ const balanceAvailable = async (req, res) => {
         await knex('pedidos')
           .update({ saldodisp: true })
           .where('id', request.id);
-        await knex('usuarios')
-          .update({
-            valordispsaque: valordispsaque.toFixed(2),
-          })
-          .where('id', request.consultor_id);
       }
     });
+
+    const requestsSaldo = await knex('pedidos')
+      .where('consultpago', false)
+      .where('consultor_id', consultor_id)
+      .where('saldodisp', true);
+
+    let saldodisp = 0;
+
+    requestsSaldo.forEach(async (request) => {
+      saldodisp += parseFloat(request.valorconsult);
+    });
+
+    const requestRest = await knex('pedidos').where('resto', '>', 0);
+    if (requestRest.length > 0) {
+      saldodisp += parseFloat(requestRest[0].resto);
+    }
+
+    await knex('usuarios')
+          .update({
+            valordispsaque: saldodisp.toFixed(2),
+          })
+          .where('id', consultor_id);
 
     res.status(200).json({ success: 'Dados Atualizados!' });
   } catch (error) {
@@ -504,6 +503,259 @@ const listPreferenceRequest = async (req, res) => {
   }
 };
 
+const addRequestAbast = async (req,res) => {
+  const {
+    produtos_ids,
+    rua,
+    numero,
+    bairro,
+    cep,
+    cidade,
+    estado,
+    complemento,
+    formaenvio,
+    nomecliente,
+  } = req.body;
+  const valorfrete = parseFloat(req.body.valorfrete) || 0;
+  const admins = await knex('usuarios').where('cargo_id', 1);
+ 
+  let user_id = req.userLogged.id;
+  let consultor_id = req.userLogged.id;
+  let cliente_id = 1;
+  let valorconsult = 0;
+  let valor = 0;
+  let movimentValor = 0;
+  let sum = 0
+  let pedidos_ids = []
+  const items = [];
+  let statuspag = null
+  let formapag_id = null
+  let valorresto = 0;
+  let pedido_resto_id = 0;
+
+  if (
+    !produtos_ids ||
+    !rua ||
+    !numero ||
+    !bairro ||
+    !cep ||
+    !cidade ||
+    !estado ||
+    !complemento ||
+    !formaenvio
+  )
+    return res.status(400).json({ error: 'Preencha todos os campos!' });
+
+    try {
+      const ids = produtos_ids.map(produto => produto.id);
+      
+      const existConsult = await knex('usuarios')
+        .where('id', user_id) 
+        .where('cargo_id', 4);
+        if (existConsult.length === 0) return res.status(404).json({error: "Consultor não encontrado, tente novamente!"})
+  
+ 
+        const products = await knex('produtos')
+          .select('*')
+          .whereIn('id', ids)
+          .where('inativo', false);
+  
+        if (products.length !== ids.length)
+          return res.status(400).json({
+            error: 'Produto selecionado não existe, tente novamente!',
+          });
+
+      products.forEach(async (product) => {
+        const index = produtos_ids.findIndex(produto => produto.id === product.id)
+          valorconsult += 1.0 * produtos_ids[index].quantidade;
+          valor += parseFloat(product.valormin) * produtos_ids[index].quantidade;   
+      });
+
+      let response;
+
+      const requests = await knex('pedidos')
+          .where('consultpago', false)
+          .where('consultor_id', req.userLogged.id)
+          .where('saldodisp', true);
+
+        const requestRest = await knex('pedidos')
+          .where('resto', '>', 0)
+          .where('consultor_id', req.userLogged.id);
+
+      if (valor > req.userLogged.valordispsaque) {
+          if (requestRest.length > 0) {
+            pedidos_ids.push(requestRest[0].id);
+            sum = parseFloat(requestRest[0].resto);
+            await knex('pedidos')
+              .update({ resto: 0.0, consultpago: true })
+              .where('id', requestRest[0].id);
+              valorresto = sum;
+              pedido_resto_id = requestRest[0].id;
+          } else {
+              for (let request of requests) {
+                pedidos_ids.push(request.id);
+                sum += parseFloat(request.valorconsult);
+                await knex('pedidos')
+                  .update({ consultpago: true })
+                  .where('id', request.id);
+              }
+          }
+
+
+        valor -= parseFloat(req.userLogged.valordispsaque)
+        items.push({
+          id: req.userLogged.id,
+          currency_id: 'BRL',
+          unit_price: parseFloat(valor),
+          description: "Valor",
+          quantity: 1,
+        });
+
+
+      const preference = new Preference(client);
+  
+      response = await preference.create({
+        body: {
+          items,
+          back_urls: {
+            success: 'http://cpd-debaixo.ddns.net:33085/mercadopagosuccess',
+            failure: 'http://cpd-debaixo.ddns.net:33085/mercadopagofailure',
+          },
+          auto_return: 'approved',
+        },
+      });
+      
+      await knex('usuarios').update({valordispsaque: 0.0}).where('id', req.userLogged.id)
+      movimentValor = req.userLogged.valordispsaque
+      } else {
+        let resto = 0;
+        if (requestRest.length > 0) {
+          pedidos_ids.push(requestRest[0].id);
+          sum = parseFloat(requestRest[0].resto);
+          await knex('pedidos')
+            .update({ resto: 0.0, consultpago: true })
+            .where('id', requestRest[0].id);
+            valorresto = sum;
+            pedido_resto_id = requestRest[0].id;
+        }
+
+        for (let request of requests) {
+          pedidos_ids.push(request.id);
+          sum += parseFloat(request.valorconsult);
+          await knex('pedidos')
+            .update({ consultpago: true })
+            .where('id', request.id);
+          if (sum > valor) {
+            resto = sum - valor;
+            await knex('pedidos')
+              .update({ consultpago: null, resto: resto.toFixed(2) })
+              .where('id', request.id);
+            break;
+          }
+        }
+        response = {
+          id: "Pago com o valor disponível para o consultor!",
+          init_point: "Pago com o valor disponível para o consultor!"
+        }
+        await knex('usuarios').update({valordispsaque: resto.toFixed(2)}).where('id', req.userLogged.id)
+        movimentValor = valor
+        statuspag = 'realizado'
+        formapag_id = 5
+      }
+
+      
+      const datapedido = dataAtualFormatada();
+
+  
+      const newRequest = {
+        datapedido,
+        valor: valor.toFixed(2),
+        valorconsult: valorconsult.toFixed(2),
+        valorfrete: valorfrete.toFixed(2),
+        consultor_id,
+        cliente_id,
+        produtos_ids: JSON.stringify(produtos_ids),
+        modelo: "abastecimento",
+        rua,
+        numero,
+        bairro,
+        cep,
+        cidade,
+        estado,
+        complemento,
+        mercadopago_id: response.id,
+        linkpagamento: response.init_point,
+        formaenvio,
+        nomecliente: nomecliente ?? '',
+      };
+
+      if(statuspag) newRequest.statuspag = statuspag
+      if(formapag_id) newRequest.formapag_id = formapag_id
+  
+      const request = await knex('pedidos').insert(newRequest).returning('*');
+      
+      const totalQuantidade = produtos_ids.reduce((soma, produto) => {
+        return soma + produto.quantidade;
+      }, 0);
+  
+      let emailError = false;
+  
+      admins.forEach((admin) => {
+        mailer.sendMail(
+          {
+            to: admin.email,
+            from: process.env.FROM_MAIL,
+            template: './addRequest',
+            subject: `(BIODERMIS) - Pedido n° ${request[0].id} de abastecimento, confira sua lista de saques!`,
+            context: {
+              qtdProdutos: totalQuantidade,
+              valor: valor.toFixed(2),
+              id: request[0].id,
+            },
+          },
+          (err) => {
+            if (err)
+              emailError = true
+          },
+        );
+      });
+  
+      if (emailError) {
+        return res.status(400).json({
+          error: 'Não foi possível enviar o email, tente novamente!',
+        });
+      }
+
+      const moviment = {
+        tipo: 'saída',
+        valor: movimentValor.toFixed(2),
+        pedido_id: request[0].id
+      };
+  
+      await knex('movimentacoes').insert(moviment);
+      const datasaque = dataAtualFormatada();
+      const data = {
+        datasaque,
+        valorsaque: movimentValor.toFixed(2),
+        valorresto,
+        pedido_resto_id,
+        pedidos_ids,
+        status: "realizado",
+        consultor_id: req.userLogged.id,
+      };
+  
+      const withdraw = await knex('saques').insert(data).returning('*');
+  
+      return res.status(200).json({
+        success: 'Pedido cadastrado com sucesso!',
+        link: response.init_point,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: 'Erro no servidor!' });
+    }
+}
+
 module.exports = {
   listRequests,
   addRequest,
@@ -512,4 +764,5 @@ module.exports = {
   balanceAvailable,
   getBalance,
   listPreferenceRequest,
+  addRequestAbast
 };

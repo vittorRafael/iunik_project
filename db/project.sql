@@ -44,6 +44,7 @@ insert into formaspagamento (forma) values ('pix');
 insert into formaspagamento (forma) values ('credito');
 insert into formaspagamento (forma) values ('debito');
 insert into formaspagamento (forma) values ('boleto');
+insert into formaspagamento (forma) values ('saldo disponivel');
 
 
 create table pedidos (
