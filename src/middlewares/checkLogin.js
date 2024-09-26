@@ -22,6 +22,7 @@ const checkLogin = async (req, res, next) => {
     req.userLogged = data;
     next();
   } catch (error) {
+    console.log(error);
     if (error.message === 'jwt expired') {
       return res.status(401).json({
         error: 'Sua sessão terminou, por favor efetue novamente seu login.',

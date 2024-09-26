@@ -626,7 +626,7 @@ const addRequestAbast = async (req,res) => {
       });
       
       await knex('usuarios').update({valordispsaque: 0.0}).where('id', req.userLogged.id)
-      movimentValor = req.userLogged.valordispsaque
+      movimentValor = parseFloat(req.userLogged.valordispsaque)
       } else {
         let resto = 0;
         if (requestRest.length > 0) {

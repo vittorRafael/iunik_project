@@ -15,6 +15,6 @@ router.get(
   requestsController.listPreferenceRequest,
 );
 
-router.post('/pedidos/abastecimento', requestsController.addRequestAbast)
+router.post('/pedidos/abastecimento', authorize(4), requestsController.addRequestAbast)
 
 module.exports = router;
