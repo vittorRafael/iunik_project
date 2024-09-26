@@ -168,6 +168,14 @@ const addRequest = async (req, res) => {
 
     const datapedido = dataAtualFormatada();
 
+    items.push({
+      id: 0,
+      title: 'Frete',
+      currency_id: 'BRL',
+      quantity: 1,
+      unit_price: parseFloat(valorfrete),
+    });
+
     const preference = new Preference(client);
 
     const response = await preference.create({
@@ -523,7 +531,7 @@ const addRequestAbast = async (req,res) => {
   let consultor_id = req.userLogged.id;
   let cliente_id = 1;
   let valorconsult = 0;
-  let valor = 0;
+  let valor = parseFloat(valorfrete);
   let movimentValor = 0;
   let sum = 0
   let pedidos_ids = []
@@ -610,7 +618,6 @@ const addRequestAbast = async (req,res) => {
           description: "Valor",
           quantity: 1,
         });
-
 
       const preference = new Preference(client);
   
