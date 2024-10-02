@@ -28,6 +28,7 @@ create table usuarios (
   status text default 'inativo',
   totalFat decimal default 0.0,
   valorDispSaque decimal default 0.0,
+  valortrancado decimal default 0.0,
   cargo_id int not null references cargos(id)
 );
 

@@ -318,6 +318,8 @@ const editRequest = async (req, res) => {
         };
         await knex('movimentacoes').insert(moviment);
       }
+
+      
     }
 
     if (
@@ -386,8 +388,33 @@ const editRequest = async (req, res) => {
 
     await knex('pedidos').where('id', id).update(data).returning('*');
 
+    const requests = await knex('pedidos')
+          .where('consultpago', false)
+          .where('consultor_id', req.userLogged.id)
+          .where('saldodisp', true);
+
+    const requestRest = await knex('pedidos')
+      .where('resto', '>', 0)
+      .where('consultor_id', req.userLogged.id);
+    
+    if(request[0].modelo == 'abastecimento'){
+          if (requestRest.length > 0) {
+            await knex('pedidos')
+              .update({ resto: 0.0, consultpago: true })
+              .where('id', requestRest[0].id);
+          } else {
+            for (let request of requests) {
+              await knex('pedidos')
+                .update({ consultpago: true })
+                .where('id', request.id);
+            }
+          }
+          await knex('usuarios').update({valordispsaque: 0.0}).where('id', request[0].consultor_id)
+      }
+
     return res.status(200).json({ success: 'Pedido atualizado com sucesso!' });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -448,7 +475,7 @@ const balanceAvailable = async (req, res) => {
 
     const requestsSaldo = await knex('pedidos')
       .where('consultpago', false)
-      .where('consultor_id', consultor_id)
+      .where('consultor_id', req.userLogged.id)
       .where('saldodisp', true);
 
     let saldodisp = 0;
@@ -457,7 +484,7 @@ const balanceAvailable = async (req, res) => {
       saldodisp += parseFloat(request.valorconsult);
     });
 
-    const requestRest = await knex('pedidos').where('resto', '>', 0);
+    const requestRest = await knex('pedidos').where('resto', '>', 0).where('consultor_id', req.userLogged.id);
     if (requestRest.length > 0) {
       saldodisp += parseFloat(requestRest[0].resto);
     }
@@ -466,10 +493,32 @@ const balanceAvailable = async (req, res) => {
           .update({
             valordispsaque: saldodisp.toFixed(2),
           })
-          .where('id', consultor_id);
+          .where('id', req.userLogged.id);
 
-    res.status(200).json({ success: 'Dados Atualizados!' });
+    const requestTot = await knex('pedidos').where('statuspag', 'realizado').where('modelo', 'venda').whereIn('formapag_id', [1, 2, 3, 4]).where('consultor_id', req.userLogged.id)
+    let totalfat = 0;
+    requestTot.forEach(request => {
+      totalfat += parseFloat(request.valor)
+    })
+    await knex('usuarios').update({totalfat: totalfat.toFixed(2)}).where('id', req.userLogged.id);
+
+
+    const requestBlocked = await knex('pedidos')
+    .where('consultpago', false)
+    .where('saldodisp', false)
+    .where('statuspag', 'realizado')
+    .whereIn('formapag_id', [1, 2, 3, 4])
+    .where('consultor_id', req.userLogged.id);
+
+    let valortrancado = 0;
+    requestBlocked.forEach(request => {
+      valortrancado += parseFloat(request.valorconsult)
+    })
+    await knex('usuarios').update({valortrancado: valortrancado.toFixed(2)}).where('id', req.userLogged.id);
+
+    res.status(200).json({ success: 'Dados Atualizados!', requestTot});
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
@@ -594,18 +643,10 @@ const addRequestAbast = async (req,res) => {
           if (requestRest.length > 0) {
             pedidos_ids.push(requestRest[0].id);
             sum = parseFloat(requestRest[0].resto);
-            await knex('pedidos')
-              .update({ resto: 0.0, consultpago: true })
-              .where('id', requestRest[0].id);
-              valorresto = sum;
-              pedido_resto_id = requestRest[0].id;
           } else {
               for (let request of requests) {
                 pedidos_ids.push(request.id);
                 sum += parseFloat(request.valorconsult);
-                await knex('pedidos')
-                  .update({ consultpago: true })
-                  .where('id', request.id);
               }
           }
 
@@ -632,7 +673,6 @@ const addRequestAbast = async (req,res) => {
         },
       });
       
-      await knex('usuarios').update({valordispsaque: 0.0}).where('id', req.userLogged.id)
       movimentValor = parseFloat(req.userLogged.valordispsaque)
       } else {
         let resto = 0;
