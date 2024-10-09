@@ -189,6 +189,8 @@ const addRequest = async (req, res) => {
       },
     });
 
+    const consultor = await knex('usuarios').where('id', consultor_id).first()
+
     const newRequest = {
       datapedido,
       formapag_id,
@@ -210,6 +212,7 @@ const addRequest = async (req, res) => {
       linkpagamento: response.init_point,
       formaenvio,
       nomecliente: nomecliente ?? '',
+      nomeconsultor: consultor.nome ?? ''
     };
 
     const request = await knex('pedidos').insert(newRequest).returning('*');
@@ -453,8 +456,15 @@ const balanceAvailable = async (req, res) => {
       const today = dataAtualFormatada();
       consultor_id = request.consultor_id
       if (
-        (request.formapag_id === 1 ||
-          request.formapag_id === 3 ||
+        (request.formapag_id === 1) &&
+        compararDatas(today, request.datapedido, 2) &&
+        request.statuspag == 'realizado'
+      ) {
+        await knex('pedidos')
+          .update({ saldodisp: true })
+          .where('id', request.id);
+      } else if (
+        ( request.formapag_id === 3 ||
           request.formapag_id === 4) &&
         compararDatas(today, request.datapedido, 7) &&
         request.statuspag == 'realizado'
