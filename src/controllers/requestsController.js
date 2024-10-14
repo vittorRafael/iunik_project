@@ -387,6 +387,9 @@ const editRequest = async (req, res) => {
       cidade: cidade ?? request[0].cidade,
       estado: estado ?? request[0].estado,
       complemento: complemento ?? request[0].complemento,
+      dataenvio: dataenvio ?? request[0].dataenvio,
+      codigoRastreio: codigoRastreio ?? request[0].codigoRastreio,
+      formaEnvio: formaEnvio ?? request[0].formaEnvio
     };
 
     await knex('pedidos').where('id', id).update(data).returning('*');
