@@ -276,8 +276,8 @@ const editRequest = async (req, res) => {
       estado,
       complemento,
       dataenvio,
-      formaEnvio,
-      codigoRastreio,
+      formaenvio,
+      codigorastreio,
     } = req.body;
     if (
       !statusentrega &&
@@ -290,9 +290,9 @@ const editRequest = async (req, res) => {
       !cidade &&
       !complemento &&
       !estado &&
-      !codigoRastreio &&
+      !codigorastreio &&
       !dataenvio &&
-      !formaEnvio
+      !formaenvio
     )
       return res.status(400).json({ error: 'Nenhuma alteração encontrada!' });
 
@@ -338,7 +338,7 @@ const editRequest = async (req, res) => {
     if (client.length === 0)
       client = await knex('usuarios').where('id', request[0].cliente_id);
 
-    if (codigoRastreio && dataenvio && formaEnvio) {
+    if (codigorastreio && dataenvio && formaenvio) {
       let emailError = false;
       mailer.sendMail(
         {
@@ -347,8 +347,8 @@ const editRequest = async (req, res) => {
           template: './confirmShipping',
           subject: `(BIODERMIS) - Pedido n° ${request[0].id} enviado!`,
           context: {
-            codigoRastreio,
-            formaEnvio,
+            codigorastreio,
+            formaenvio,
             dataenvio,
             id: request[0].id,
           },
@@ -365,9 +365,9 @@ const editRequest = async (req, res) => {
         });
       }
     } else if (
-      codigoRastreio &&
+      codigorastreio &&
       dataenvio &&
-      formaEnvio &&
+      formaenvio &&
       statuspag !== 'realizado'
     ) {
       return res.json({
@@ -389,7 +389,7 @@ const editRequest = async (req, res) => {
       complemento: complemento ?? request[0].complemento,
       dataenvio: dataenvio ?? request[0].dataenvio,
       codigorastreio: codigorastreio ?? request[0].codigorastreio,
-      formaenvio: formaEnvio ?? request[0].formaenvio
+      formaenvio: formaenvio ?? request[0].formaenvio
     };
 
     await knex('pedidos').where('id', id).update(data).returning('*');
