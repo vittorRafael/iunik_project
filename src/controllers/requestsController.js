@@ -388,8 +388,8 @@ const editRequest = async (req, res) => {
       estado: estado ?? request[0].estado,
       complemento: complemento ?? request[0].complemento,
       dataenvio: dataenvio ?? request[0].dataenvio,
-      codigoRastreio: codigoRastreio ?? request[0].codigoRastreio,
-      formaEnvio: formaEnvio ?? request[0].formaEnvio
+      codigorastreio: codigorastreio ?? request[0].codigorastreio,
+      formaenvio: formaEnvio ?? request[0].formaenvio
     };
 
     await knex('pedidos').where('id', id).update(data).returning('*');
