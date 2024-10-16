@@ -387,7 +387,7 @@ const editRequest = async (req, res) => {
       cidade: cidade ?? request[0].cidade,
       estado: estado ?? request[0].estado,
       complemento: complemento ?? request[0].complemento,
-      dataEnvio: dataenvio ?? request[0].dataEnvio,
+      dataenvio: dataenvio ?? request[0].dataenvio,
       codigoRastreio: codigoRastreio ?? request[0].codigoRastreio,
       formaEnvio: formaEnvio ?? request[0].formaEnvio
     };
