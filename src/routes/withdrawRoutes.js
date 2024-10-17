@@ -2,11 +2,12 @@ const express = require('express');
 const router = express();
 const withdrawController = require('../controllers/withdrawController');
 const uploadComp = require('../middlewares/addComprov');
+const authorize = require('../middlewares/authorize');
 
-router.post('/saques', withdrawController.addWithdraw);
-router.get('/saques/:id', withdrawController.listWithdraws);
+router.post('/saques', authorize(4), withdrawController.addWithdraw);
+router.get('/saques/:id', authorize(1,2,4), withdrawController.listWithdraws);
 router.post(
-  '/saques/comprovante/:id',
+  '/saques/comprovante/:id',authorize(1),
   uploadComp.single('file'),
   withdrawController.addComprov,
 );
