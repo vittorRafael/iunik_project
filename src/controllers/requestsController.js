@@ -43,6 +43,7 @@ const addRequest = async (req, res) => {
     complemento,
     formaenvio,
     nomecliente,
+    telefone
   } = req.body;
   const valorfrete = parseFloat(req.body.valorfrete) || 0;
   const admins = await knex('usuarios').where('cargo_id', 1);
@@ -208,6 +209,7 @@ const addRequest = async (req, res) => {
       cidade,
       estado,
       complemento,
+      telefone,
       mercadopago_id: response.id,
       linkpagamento: response.init_point,
       formaenvio,
@@ -278,6 +280,7 @@ const editRequest = async (req, res) => {
       dataenvio,
       formaenvio,
       codigorastreio,
+      telefone
     } = req.body;
     if (
       !statusentrega &&
@@ -292,7 +295,8 @@ const editRequest = async (req, res) => {
       !estado &&
       !codigorastreio &&
       !dataenvio &&
-      !formaenvio
+      !formaenvio &&
+      !telefone
     )
       return res.status(400).json({ error: 'Nenhuma alteração encontrada!' });
 
@@ -389,7 +393,8 @@ const editRequest = async (req, res) => {
       complemento: complemento ?? request[0].complemento,
       dataenvio: dataenvio ?? request[0].dataenvio,
       codigorastreio: codigorastreio ?? request[0].codigorastreio,
-      formaenvio: formaenvio ?? request[0].formaenvio
+      formaenvio: formaenvio ?? request[0].formaenvio,
+      telefone: telefone ?? request[0].telefone,
     };
 
     await knex('pedidos').where('id', id).update(data).returning('*');

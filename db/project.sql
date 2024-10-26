@@ -171,6 +171,8 @@ create table enderecos (
   cep text not null,
   cidade text not null,
   estado text not null
+  nomecliente text null,
+  telefone text null
 );
 
 

@@ -276,8 +276,12 @@ const removeImgProd = async (req, res) => {
     if (imagesPath.length > 0) {
       if (imagens.length > 0) {
         imagens.forEach((img) => {
-          fs.unlinkSync(imagesPath[img]);
-          imagesDeleted.push(imagesPath[img]);
+          if (imagesPath[img].startsWith('http')) {
+            imagesDeleted.push(imagesPath[img]);
+          } else {
+            fs.unlinkSync(imagesPath[img]);
+            imagesDeleted.push(imagesPath[img]);
+          }
         });
       } else {
         return res
@@ -299,6 +303,7 @@ const removeImgProd = async (req, res) => {
         .json({ error: 'Imagens não excluídas, produto sem fotos!' });
     }
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };

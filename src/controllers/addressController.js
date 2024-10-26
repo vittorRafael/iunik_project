@@ -1,9 +1,9 @@
 const knex = require('../config/connect');
 
 const addAddress = async (req, res) => {
-  const { rua, bairro, complemento, numero, cep, cidade, estado, usuario_id } =
+  const {nomecliente, telefone, rua, bairro, complemento, numero, cep, cidade, estado, usuario_id } =
     req.body;
-  if (!rua || !bairro || !numero || !cep || !cidade || !estado || !usuario_id)
+  if (!rua || !bairro || !numero || !cep || !cidade || !estado || !usuario_id || !nomecliente || !telefone)
     return res.status(400).json({ error: 'Preencha todos os campos!' });
   try {
     const usuario = await knex('usuarios').where('id', usuario_id).first();
@@ -18,6 +18,8 @@ const addAddress = async (req, res) => {
       cep,
       cidade,
       estado,
+      nomecliente,
+      telefone,
       usuario_id,
     };
 
@@ -53,9 +55,9 @@ const listAddress = async (req, res) => {
 };
 const editAddress = async (req, res) => {
   const { id } = req.params;
-  const { rua, bairro, complemento, numero, cep, cidade, estado } = req.body;
+  const { nomecliente, telefone, rua, bairro, complemento, numero, cep, cidade, estado } = req.body;
 
-  if (!rua && !bairro && !numero && !cep && !cidade && !estado && !complemento)
+  if (!rua && !bairro && !numero && !cep && !cidade && !estado && !complemento && !nomecliente && !telefone)
     return res.status(400).json({ error: 'Nenhuma alteração encontrada!' });
 
   try {
@@ -71,6 +73,8 @@ const editAddress = async (req, res) => {
       cidade: cidade ?? endereco.cidade,
       estado: estado ?? endereco.estado,
       complemento: complemento ?? endereco.complemento,
+      nomecliente: nomecliente ?? endereco.nomecliente,
+      telefone: telefone ?? endereco.telefone,
     };
 
     await knex('enderecos').where('id', id).update(data);
