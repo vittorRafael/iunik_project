@@ -3,6 +3,6 @@ const movimentController = require('../controllers/movimentController');
 const router = express.Router();
 const authorize = require('../middlewares/authorize');
 
-router.get('/movimentacoes', authorize(1),  movimentController.listMoviments);
+router.get('/movimentacoes',  movimentController.listMoviments);
 
 module.exports = router;

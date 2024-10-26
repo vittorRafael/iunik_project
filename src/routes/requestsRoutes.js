@@ -3,18 +3,18 @@ const router = express();
 const requestsController = require('../controllers/requestsController');
 const authorize = require('../middlewares/authorize');
 
-router.post('/pedidos', authorize(4, 5), requestsController.addRequest);
+router.post('/pedidos', requestsController.addRequest);
 router.get('/pedidos/:id', requestsController.listRequests);
-router.patch('/pedidos/:id', authorize(1,2,3,4), requestsController.editRequest);
+router.patch('/pedidos/:id', requestsController.editRequest);
 router.delete('/pedidos/:id', requestsController.removeRequest);
 
 router.post('/saldodisp', requestsController.balanceAvailable);
-router.get('/saldodisp', authorize(4), requestsController.getBalance);
+router.get('/saldodisp', requestsController.getBalance);
 router.get(
   '/pedidos/preferences/:preferenceId',
   requestsController.listPreferenceRequest,
 );
 
-router.post('/pedidos/abastecimento', authorize(4), requestsController.addRequestAbast)
+router.post('/pedidos/abastecimento', requestsController.addRequestAbast)
 
 module.exports = router;

@@ -3,15 +3,15 @@ const router = express();
 const consultController = require('../controllers/consultController');
 const authorize = require('../middlewares/authorize');
 
-router.get('/consultores/:id', authorize(4), consultController.listConsults);
-router.patch('/consultores/:id', authorize(1, 2), consultController.bloqConsult);
+router.get('/consultores/:id', consultController.listConsults);
+router.patch('/consultores/:id', consultController.bloqConsult);
 
 //tabela consultor_produtos
-router.get('/consultor/produtos', authorize(4), consultController.listMyProducts);
-router.post('/consultor/produtos/:id', authorize(4), consultController.addProductConsult);
-router.patch('/consultor/produtos/:id', authorize(4), consultController.editProductConsult);
+router.get('/consultor/produtos', consultController.listMyProducts);
+router.post('/consultor/produtos/:id', consultController.addProductConsult);
+router.patch('/consultor/produtos/:id', consultController.editProductConsult);
 router.delete(
-  '/consultor/produtos/:id', authorize(4),
+  '/consultor/produtos/:id',
   consultController.deleteProductConsult,
 );
 
