@@ -31,7 +31,19 @@ const checkLogin = async (req, res, next) => {
     if (error.message === 'jwt must be provided')
       return res.status(401).json({
         error:
-          'Para acessar este recurso um token de autenticação necessário deve ser enviado.',
+          'Para acessar este recurso um token de autenticação válido deve ser enviado!',
+      });
+    
+      if (error.message === 'invalid signature')
+      return res.status(401).json({
+        error:
+          'Para acessar este recurso um token de autenticação válido deve ser enviado!',
+      });
+
+      if (error.message === 'jwt malformed')
+      return res.status(401).json({
+        error:
+          'Para acessar este recurso um token de autenticação válido deve ser enviado!',
       });
 
     return res.status(500).json({ error: 'Erro no servidor!' });
