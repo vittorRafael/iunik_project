@@ -174,9 +174,3 @@ create table enderecos (
   nomecliente text null,
   telefone text null
 );
-
-
-
-
-
-
