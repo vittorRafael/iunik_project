@@ -183,8 +183,8 @@ const addRequest = async (req, res) => {
       body: {
         items,
         back_urls: {
-          success: 'http://cpd-debaixo.ddns.net:33085/mercadopagosuccess',
-          failure: 'http://cpd-debaixo.ddns.net:33085/mercadopagofailure',
+          success: 'http://85.31.61.50/mercadopagosuccess',
+          failure: 'http://85.31.61.50/mercadopagofailure',
         },
         auto_return: 'approved',
       },
