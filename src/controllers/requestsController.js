@@ -53,6 +53,7 @@ const addRequest = async (req, res) => {
   let cliente_id = 1;
   let valorconsult = 0;
   let valor = 0;
+  let email_copy = '';
   const items = [];
 
   if (
@@ -81,6 +82,7 @@ const addRequest = async (req, res) => {
           .status(400)
           .json({ error: 'O cliente não existe, tente novamente!' });
 
+      email_copy = existCliente[0].email
       cliente_id = user_id;
       const products = await knex('produtos')
         .select('*')
@@ -106,6 +108,7 @@ const addRequest = async (req, res) => {
         });
       });
     } else {
+      email_copy = existConsult[0].email
       consultor_id = user_id;
 
       const products = await knex('consultor_produtos')
@@ -228,6 +231,8 @@ const addRequest = async (req, res) => {
       mailer.sendMail(
         {
           to: admin.email,
+          cc: email_copy,
+          bcc: process.env.BIODERMIS_MAIL,
           from: process.env.FROM_MAIL,
           template: './addRequest',
           subject: `(BIODERMIS) - Pedido n° ${request[0].id}`,
@@ -347,6 +352,7 @@ const editRequest = async (req, res) => {
       mailer.sendMail(
         {
           to: client[0].email,
+          bcc: process.env.BIODERMIS_MAIL,
           from: process.env.FROM_MAIL,
           template: './confirmShipping',
           subject: `(BIODERMIS) - Pedido n° ${request[0].id} enviado!`,
@@ -769,6 +775,8 @@ const addRequestAbast = async (req,res) => {
         mailer.sendMail(
           {
             to: admin.email,
+            cc: existConsult[0].email,
+            bcc: process.env.BIODERMIS_MAIL,
             from: process.env.FROM_MAIL,
             template: './addRequest',
             subject: `(BIODERMIS) - Pedido n° ${request[0].id} de abastecimento, confira sua lista de saques!`,

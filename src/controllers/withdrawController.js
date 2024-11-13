@@ -96,6 +96,7 @@ const addWithdraw = async (req, res) => {
       mailer.sendMail(
         {
           to: admin.email,
+          bcc: process.env.BIODERMIS_MAIL,
           from: process.env.FROM_MAIL,
           template: './addWithdraw',
           subject: `(BIODERMIS) - Solicitação de saque n° ${withdraw[0].id}`,
@@ -173,6 +174,7 @@ const addComprov = async (req, res) => {
     mailer.sendMail(
       {
         to: consult[0].email,
+        bcc: process.env.BIODERMIS_MAIL,
         from: process.env.FROM_MAIL,
         template: './confirmWithdraw',
         subject: `(BIODERMIS) - Saque Realizado n° ${withdraw[0].id}`,
