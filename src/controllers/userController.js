@@ -75,27 +75,24 @@ const insertUser = async (req, res) => {
         error: 'Ocorreu um erro ao cadastrar o usuário, tente novamente!',
       });
 
+      if(user.cargo_id === 4){
       mailer.sendMail(
         {
           to: email,
           bcc: process.env.BIODERMIS_MAIL,
           from: process.env.FROM_MAIL,
           template: './addConsult',
-          subject: `(BIODERMIS) - Novo usuário n° ${user[0].id}`,
+          subject: `🎉 Revenda Biodermis! Sua Solicitação está em Análise`,
           context: {
-            nome,
-            email,
-            cpf,
-            id: user[0].id,
+            nome
           },
         },
         (err) => {
           if (err)
-            return res.status(400).json({
-              error: 'Não foi possível enviar o email, tente novamente!',
-            });
+            console.log(err)
         },
-      );
+      )
+      }
     
 
     return res

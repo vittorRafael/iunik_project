@@ -1,0 +1,33 @@
+Olá, <strong>{{nome}}</strong>!
+<br /><br />
+Temos boas notícias: <strong>um novo pedido foi realizado</strong> através do app Biodermis! 🎉 Isso significa que é hora de prepararmos a entrega para seu cliente e fazer mais uma venda de sucesso.
+<br /><br />
+<strong>Resumo do Pedido:</strong>
+<br /><br />
+● <strong>Produto(s) solicitado(s):</strong> {{#each produtos}}
+{{#unless (eq title "Frete")}}
+{{#if @last}}
+{{title}}
+{{else}}
+{{title}} -
+{{/if}}
+{{/unless}}
+{{/each}}
+
+<br />● <strong>Quantidade:</strong> {{qtd}}
+<br />● <strong>Valor comissão:</strong> R$ {{valorcomiss}}
+<br />● <strong>Nome do Cliente:</strong> {{nomecliente}}
+<br />● <strong>Endereço de Entrega:</strong> {{rua}}, {{numero}}, {{complemento}} - {{bairro}}, {{cidade}} - {{estado}}
+<br /><br />
+<strong>Próximos Passos:</strong>
+<br /><br />
+1. <strong>Vamos separar os produtos:</strong> Organizamos o pedido conforme os itens listados acima.<br />
+2. <strong>Prepare a entrega:</strong> Com todos os produtos prontos, fazemos o envio.<br />
+3. <strong>Código de rastreamento:</strong> Assim que fizermos o despacho o código de rastreamento fica disponível em seu app na aba de pedidos.<br />
+<br />
+Se precisar de qualquer ajuda ou tiver dúvidas, nossa equipe de suporte está aqui para te ajudar!
+<br /><br />
+Parabéns por mais essa venda, e conte sempre com a Biodermis para apoiar o seu sucesso!
+<br /><br />
+Atenciosamente,
+Equipe Biodermis

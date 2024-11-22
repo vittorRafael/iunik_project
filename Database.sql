@@ -74,7 +74,10 @@ create table pedidos (
   linkPagamento text null,
   mercadopago_id text null,
   nomeCliente text null,
+  cpfCliente text null,
+  emailCliente text null,
   nomeConsultor text null,
+  telefone text null,
   formapag_id int null references formaspagamento(id),
   cliente_id int not null references usuarios(id),
   consultor_id int not null references usuarios(id)

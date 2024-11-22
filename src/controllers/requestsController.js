@@ -43,7 +43,9 @@ const addRequest = async (req, res) => {
     complemento,
     formaenvio,
     nomecliente,
-    telefone
+    emailcliente,
+    cpfcliente,
+    telefone, 
   } = req.body;
   const valorfrete = parseFloat(req.body.valorfrete) || 0;
   const admins = await knex('usuarios').where('cargo_id', 1);
@@ -180,6 +182,10 @@ const addRequest = async (req, res) => {
       unit_price: parseFloat(valorfrete),
     });
 
+    const ultimoPedido = await knex('pedidos')
+  .orderBy('id', 'desc')
+  .first();
+
     const preference = new Preference(client);
 
     const response = await preference.create({
@@ -190,6 +196,7 @@ const addRequest = async (req, res) => {
           failure: 'http://85.31.61.50/mercadopagofailure',
         },
         auto_return: 'approved',
+        external_reference: ultimoPedido.id + 1
       },
     });
 
@@ -217,6 +224,8 @@ const addRequest = async (req, res) => {
       linkpagamento: response.init_point,
       formaenvio,
       nomecliente: nomecliente ?? '',
+      emailcliente: emailcliente ?? '',
+      cpfcliente: cpfcliente ?? '',
       nomeconsultor: consultor.nome ?? ''
     };
 
@@ -227,27 +236,67 @@ const addRequest = async (req, res) => {
 
     let emailError = false;
 
-    admins.forEach((admin) => {
-      mailer.sendMail(
-        {
-          to: admin.email,
-          cc: email_copy,
-          bcc: process.env.BIODERMIS_MAIL,
-          from: process.env.FROM_MAIL,
-          template: './addRequest',
-          subject: `(BIODERMIS) - Pedido n° ${request[0].id}`,
-          context: {
-            qtdProdutos: totalQuantidade,
-            valor: valor.toFixed(2),
-            id: request[0].id,
+    if(consultor_id != 1) {
+      admins.forEach((admin) => {
+        mailer.sendMail(
+          {
+            to: email_copy,
+            bcc: process.env.BIODERMIS_MAIL,
+            from: process.env.FROM_MAIL,
+            template: './newRequestConsult',
+            subject: `🚀 Novo Pedido Realizado! `,
+            context: {
+              nome: existConsult[0].nome,
+              qtd: items.length - 1,
+              produtos: items,
+              valorcomiss: newRequest.valorconsult,
+              nomecliente,
+              rua,
+              numero,
+              bairro,
+              cidade,
+              estado,
+              complemento,
+            },
           },
-        },
-        (err) => {
-          if (err)
-            emailError = true
-        },
-      );
-    });
+          (err) => {
+            if (err)
+              emailError = true
+          },
+        );
+      });
+    } else {
+      admins.forEach((admin) => {
+        mailer.sendMail(
+          {
+            to: admin.email,
+            bcc: process.env.BIODERMIS_MAIL,
+            from: process.env.FROM_MAIL,
+            template: './newRequestConsult',
+            subject: `🚀 Novo Pedido Realizado! `,
+            context: {
+              nome: existConsult[0].nome,
+              qtd: items.length - 1,
+              produtos: items,
+              valorcomiss: newRequest.valortotal,
+              nomecliente: admin.nome,
+              rua,
+              numero,
+              bairro,
+              cidade,
+              estado,
+              complemento,
+            },
+          },
+          (err) => {
+            if (err)
+              emailError = true
+          },
+        );
+      });
+    }
+
+    
 
     if (emailError) {
       return res.status(400).json({
@@ -355,12 +404,10 @@ const editRequest = async (req, res) => {
           bcc: process.env.BIODERMIS_MAIL,
           from: process.env.FROM_MAIL,
           template: './confirmShipping',
-          subject: `(BIODERMIS) - Pedido n° ${request[0].id} enviado!`,
+          subject: `📦 Pedido Enviado! Rumo à Entrega para o Cliente`,
           context: {
-            codigorastreio,
-            formaenvio,
-            dataenvio,
-            id: request[0].id,
+            nome: client[0].nome,
+            codigorastreio
           },
         },
         (err) => {
