@@ -30,6 +30,16 @@ const listRequests = async (req, res) => {
   }
 };
 
+const listRequestsUsers = async (req, res) => {
+  const { id } = req.params;
+  try {
+      const requests = await knex('pedidos').select('*').where('consultor_id', id).orWhere('cliente_id', id);
+      return res.status(200).json(requests);
+  } catch (error) {
+    return res.status(500).json({ error: 'Erro no servidor!' });
+  }
+};
+
 const addRequest = async (req, res) => {
   const {
     formapag_id,
@@ -878,6 +888,7 @@ const addRequestAbast = async (req,res) => {
 
 module.exports = {
   listRequests,
+  listRequestsUsers,
   addRequest,
   editRequest,
   removeRequest,
