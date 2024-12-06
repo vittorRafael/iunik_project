@@ -4,6 +4,7 @@ const requestsController = require('../controllers/requestsController');
 const authorize = require('../middlewares/authorize');
 
 router.post('/pedidos', requestsController.addRequest);
+
 router.get('/pedidos/:id', requestsController.listRequests);
 router.get('/pedidos/usuarios/:id', requestsController.listRequestsUsers);
 router.patch('/pedidos/:id', requestsController.editRequest);

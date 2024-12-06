@@ -16,6 +16,7 @@ const productsController = require('../controllers/productsController');
 const categoryController = require('../controllers/categoryController');
 const carrosselController = require('../controllers/carrosselController');
 const addressController = require('../controllers/addressController');
+const requestsController = require('../controllers/requestsController');
 
 router.use(positionRoutes);
 router.use(mercadoPagoRoutes);
@@ -24,6 +25,7 @@ router.get('/maisvendidos', productsController.getTop5ProdutosMaisVendidos)
 router.get('/categorias', categoryController.listCategorys);
 router.get('/carrossel/:id', carrosselController.listCarrossel);
 router.post('/endereco', addressController.addAddress);
+router.post('/pedidos/web', requestsController.addRequestUnlogged)
 router.use(userRoutes);
 router.use(categoryRoutes);
 router.use(consultRoutes);

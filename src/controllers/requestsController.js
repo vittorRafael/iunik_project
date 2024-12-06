@@ -886,6 +886,181 @@ const addRequestAbast = async (req,res) => {
     }
 }
 
+const addRequestUnlogged = async (req, res) => {
+  const {
+    formapag_id,
+    produtos_ids,
+    rua,
+    numero,
+    bairro,
+    cep,
+    cidade,
+    estado,
+    complemento,
+    formaenvio,
+    nomecliente,
+    emailcliente,
+    cpfcliente,
+    telefone, 
+    consultor_id
+  } = req.body;
+  const valorfrete = parseFloat(req.body.valorfrete) || 0;
+  const admins = await knex('usuarios').where('cargo_id', 1);
+  const items = []
+  let valor = 0
+  let cliente_id = 1
+
+  if (
+    !produtos_ids ||
+    !rua ||
+    !numero ||
+    !bairro ||
+    !cep ||
+    !cidade ||
+    !estado ||
+    !complemento ||
+    !nomecliente ||
+    !emailcliente ||
+    !cpfcliente ||
+    !formaenvio || 
+    !consultor_id
+  )
+    return res.status(400).json({ error: 'Preencha todos os campos!' });
+
+
+    try {
+      const ids = produtos_ids.map(produto => produto.id);
+      const products = await knex('produtos')
+        .select('*')
+        .whereIn('id', ids)
+        .where('inativo', false);
+
+      if (products.length !== ids.length)
+        return res
+          .status(400)
+          .json({ error: 'Produto selecionado não existe, tente novamente!' });
+
+          products.forEach(async (product, i) => {
+            valor += parseFloat(product.valorvenda);
+            items.push({
+              id: product.id,
+              title: product.nome,
+              currency_id: 'BRL',
+              picture_url: product.imagens ? product.imagens[0] : '',
+              description: product.descricao,
+              category_id: product.categoria_id,
+              quantity: produtos_ids[i].quantidade,
+              unit_price: parseFloat(product.valorvenda),
+            });
+          });
+
+          const datapedido = dataAtualFormatada();
+
+          items.push({
+            id: 0,
+            title: 'Frete',
+            currency_id: 'BRL',
+            quantity: 1,
+            unit_price: parseFloat(valorfrete),
+          });
+      
+          const ultimoPedido = await knex('pedidos')
+        .orderBy('id', 'desc')
+        .first();
+      
+          const preference = new Preference(client);
+      
+          const response = await preference.create({
+            body: {
+              items,
+              back_urls: {
+                success: 'http://85.31.61.50/mercadopagosuccess',
+                failure: 'http://85.31.61.50/mercadopagofailure',
+              },
+              auto_return: 'approved',
+              external_reference: ultimoPedido.id + 1
+            },
+          });
+
+          const newRequest = {
+            datapedido,
+            formapag_id,
+            valor: valor.toFixed(2),
+            valorconsult: 0,
+            valorfrete: valorfrete.toFixed(2),
+            consultor_id,
+            cliente_id,
+            produtos_ids: JSON.stringify(produtos_ids),
+            modelo: "venda",
+            rua,
+            numero,
+            bairro,
+            cep,
+            cidade,
+            estado,
+            complemento,
+            telefone,
+            mercadopago_id: response.id,
+            linkpagamento: response.init_point,
+            formaenvio,
+            nomecliente,
+            emailcliente,
+            cpfcliente,
+            nomeconsultor: ''
+          };
+      
+          const request = await knex('pedidos').insert(newRequest).returning('*');
+
+    const totalQuantidade = produtos_ids.reduce((soma, produto) => {
+      return soma + produto.quantidade;
+    }, 0);
+
+    let emailError = false;
+
+    admins.forEach((admin) => {
+      mailer.sendMail(
+        {
+          to: admin.email,
+          bcc: process.env.BIODERMIS_MAIL,
+          from: process.env.FROM_MAIL,
+          template: './newRequestConsult',
+          subject: `🚀 Novo Pedido Realizado! `,
+          context: {
+            nome: nomecliente,
+            qtd: items.length - 1,
+            produtos: items,
+            valorcomiss: newRequest.valortotal,
+            nomecliente: admin.nome,
+            rua,
+            numero,
+            bairro,
+            cidade,
+            estado,
+            complemento,
+          },
+        },
+        (err) => {
+          if (err)
+            emailError = true
+        },
+      );
+    });
+    if (emailError) {
+      return res.status(400).json({
+        error: 'Não foi possível enviar o email, tente novamente!',
+      });
+    }
+
+    return res.status(200).json({
+      success: 'Pedido cadastrado com sucesso!',
+      link: response.init_point,
+    });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: 'Erro no servidor!' });
+    }
+}
+
 module.exports = {
   listRequests,
   listRequestsUsers,
@@ -895,5 +1070,6 @@ module.exports = {
   balanceAvailable,
   getBalance,
   listPreferenceRequest,
-  addRequestAbast
+  addRequestAbast,
+  addRequestUnlogged
 };
