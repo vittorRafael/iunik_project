@@ -66,6 +66,7 @@ const addRequest = async (req, res) => {
   let valorconsult = 0;
   let valor = 0;
   let email_copy = '';
+  let cliente_logado_nome = ''
   const items = [];
 
   if (
@@ -96,6 +97,7 @@ const addRequest = async (req, res) => {
 
       email_copy = existCliente[0].email
       cliente_id = user_id;
+      cliente_logado_nome = existCliente[0].nome
       const products = await knex('produtos')
         .select('*')
         .whereIn('id', ids)
@@ -285,7 +287,7 @@ const addRequest = async (req, res) => {
             template: './newRequestConsult',
             subject: `🚀 Novo Pedido Realizado! `,
             context: {
-              nome: existConsult[0].nome,
+              nome: cliente_logado_nome,
               qtd: items.length - 1,
               produtos: items,
               valorcomiss: newRequest.valortotal,
@@ -747,8 +749,8 @@ const addRequestAbast = async (req,res) => {
         body: {
           items,
           back_urls: {
-            success: 'http://cpd-debaixo.ddns.net:33085/mercadopagosuccess',
-            failure: 'http://cpd-debaixo.ddns.net:33085/mercadopagofailure',
+            success: 'http://85.31.61.50/mercadopagosuccess',
+            failure: 'http://85.31.61.50/mercadopagofailure',
           },
           auto_return: 'approved',
         },
