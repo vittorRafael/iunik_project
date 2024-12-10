@@ -970,7 +970,7 @@ const addRequestUnlogged = async (req, res) => {
             unit_price: parseFloat(product.valorvenda), 
           });
         } else {
-          valor += parseFloat(productConsult[0].valorconsult);
+          valor += parseFloat(productConsult[0].valortotal);
           items.push({
             id: product.id,
             title: product.nome,
@@ -979,7 +979,7 @@ const addRequestUnlogged = async (req, res) => {
             description: product.descricao,
             category_id: product.categoria_id,
             quantity: produtos_ids[i].quantidade,
-            unit_price: parseFloat(productConsult[0].valorconsult) , 
+            unit_price: parseFloat(productConsult[0].valortotal) , 
           });
         }      
       })
