@@ -655,6 +655,7 @@ const addRequestAbast = async (req,res) => {
     complemento,
     formaenvio,
     nomecliente,
+    nomeconsultor
   } = req.body;
   const valorfrete = parseFloat(req.body.valorfrete) || 0;
   const admins = await knex('usuarios').where('cargo_id', 1);
@@ -707,7 +708,6 @@ const addRequestAbast = async (req,res) => {
 
       products.forEach(async (product) => {
         const index = produtos_ids.findIndex(produto => produto.id === product.id)
-          valorconsult += 1.0 * produtos_ids[index].quantidade;
           valor += parseFloat(product.valormin) * produtos_ids[index].quantidade;   
       });
 
@@ -726,44 +726,51 @@ const addRequestAbast = async (req,res) => {
           if (requestRest.length > 0) {
             pedidos_ids.push(requestRest[0].id);
             sum = parseFloat(requestRest[0].resto);
+            await knex('pedidos')
+            .update({ resto: 0.0, consultpago: true })
+            .where('id', requestRest[0].id);
           } else {
               for (let request of requests) {
                 pedidos_ids.push(request.id);
                 sum += parseFloat(request.valorconsult);
+                await knex('pedidos')
+                  .update({ consultpago: true })
+                  .where('id', request.id);
               }
           }
 
 
-        valor -= parseFloat(req.userLogged.valordispsaque)
-        items.push({
-          id: req.userLogged.id,
-          currency_id: 'BRL',
-          unit_price: parseFloat(valor),
-          description: "Valor",
-          quantity: 1,
-        });
+          valor -= parseFloat(req.userLogged.valordispsaque)
+          items.push({
+            id: req.userLogged.id,
+            currency_id: 'BRL',
+            unit_price: parseFloat(valor),
+            description: "Valor",
+            quantity: 1,
+          });
 
-      const preference = new Preference(client);
+       const preference = new Preference(client);
   
-      response = await preference.create({
-        body: {
-          items,
-          back_urls: {
-            success: 'http://85.31.61.50/mercadopagosuccess',
-            failure: 'http://85.31.61.50/mercadopagofailure',
+        response = await preference.create({
+          body: {
+           items,
+           back_urls: {
+              success: 'http://85.31.61.50/mercadopagosuccess',
+             failure: 'http://85.31.61.50/mercadopagofailure',
+            },
+            auto_return: 'approved',
           },
-          auto_return: 'approved',
-        },
-      });
+        });
       
-      movimentValor = parseFloat(req.userLogged.valordispsaque)
+        movimentValor = parseFloat(req.userLogged.valordispsaque)
       } else {
         let resto = 0;
         if (requestRest.length > 0) {
+          resto = parseFloat(requestRest[0].resto) > valor ? parseFloat(requestRest[0].resto) - valor : 0
           pedidos_ids.push(requestRest[0].id);
           sum = parseFloat(requestRest[0].resto);
           await knex('pedidos')
-            .update({ resto: 0.0, consultpago: true })
+            .update({ resto, consultpago: true })
             .where('id', requestRest[0].id);
             valorresto = sum;
             pedido_resto_id = requestRest[0].id;
@@ -817,6 +824,7 @@ const addRequestAbast = async (req,res) => {
         linkpagamento: response.init_point,
         formaenvio,
         nomecliente: nomecliente ?? '',
+        nomeconsultor: nomeconsultor ?? ''
       };
 
       if(statuspag) newRequest.statuspag = statuspag
@@ -942,21 +950,41 @@ const addRequestUnlogged = async (req, res) => {
           .status(400)
           .json({ error: 'Produto selecionado não existe, tente novamente!' });
 
-          products.forEach(async (product, i) => {
-            valor += parseFloat(product.valorvenda);
-            items.push({
-              id: product.id,
-              title: product.nome,
-              currency_id: 'BRL',
-              picture_url: product.imagens ? product.imagens[0] : '',
-              description: product.descricao,
-              category_id: product.categoria_id,
-              quantity: produtos_ids[i].quantidade,
-              unit_price: parseFloat(product.valorvenda),
-            });
-          });
+          
+      products.forEach(async (product, i) => {
+        const productConsult  = await knex('consultor_produtos')
+        .select('*')
+        .where('consultor_id', consultor_id)
+        .where('produto_id', product.id)
 
-          const datapedido = dataAtualFormatada();
+        if(productConsult.length == 0) {
+          valor += parseFloat(product.valorvenda);
+          items.push({
+            id: product.id,
+            title: product.nome,
+            currency_id: 'BRL',
+            picture_url: product.imagens ? product.imagens[0] : '',
+            description: product.descricao,
+            category_id: product.categoria_id,
+            quantity: produtos_ids[i].quantidade,
+            unit_price: parseFloat(product.valorvenda), 
+          });
+        } else {
+          valor += parseFloat(productConsult[0].valorconsult);
+          items.push({
+            id: product.id,
+            title: product.nome,
+            currency_id: 'BRL',
+            picture_url: product.imagens ? product.imagens[0] : '',
+            description: product.descricao,
+            category_id: product.categoria_id,
+            quantity: produtos_ids[i].quantidade,
+            unit_price: parseFloat(productConsult[0].valorconsult) , 
+          });
+        }      
+      })
+
+      const datapedido = dataAtualFormatada();
 
           items.push({
             id: 0,
