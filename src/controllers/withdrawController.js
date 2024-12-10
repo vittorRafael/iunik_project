@@ -141,6 +141,8 @@ const listWithdraws = async (req, res) => {
 const addComprov = async (req, res) => {
   const { id } = req.params;
   const file = req.file;
+  const dateNow = new Date()
+  const datacomp = `${dateNow.getDate()}/${dateNow.getMonth()}/${dateNow.getFullYear()}`
   try {
     const withdraw = await knex('saques').select('*').where('id', id);
     if (withdraw.length === 0)
@@ -163,7 +165,7 @@ const addComprov = async (req, res) => {
 
     await knex('saques')
       .where('id', id)
-      .update({ srccomp: file.path, status: 'realizado' })
+      .update({ srccomp: file.path, status: 'realizado', datacomp })
       .returning('*');
 
     const consult = await knex('usuarios').where(

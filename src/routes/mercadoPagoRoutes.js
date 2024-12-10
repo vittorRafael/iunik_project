@@ -101,6 +101,66 @@ async function consultarPagamento(paymentId) {
   return await response.json();
 }
 
+router.post('/calcularfrete', async (req, res) => {
+  const { zipCodeAdress, productsData } = req.body;
+
+  // Validação inicial
+  if (!zipCodeAdress || !productsData) {
+    return res.status(400).json({ error: "Campos 'zipCodeAdress' e 'productsData' são obrigatórios!" });
+  }
+
+  const url =
+    process.env.EXPO_PUBLIC_BASE_URL_MELHOR_ENVIO
+  const token =
+    process.env.EXPO_PUBLIC_MELHOR_ENVIO_TOKEN
+
+  // Mapeamento dos produtos
+  const products = productsData.map((product) => ({
+    id: product.id,
+    width: parseFloat(product.largura),
+    height: parseFloat(product.altura),
+    length: parseFloat(product.profundidade),
+    weight: parseFloat(product.peso) / 1000, // Convertendo gramas para kg
+    insurance_value: parseFloat(product.valorvenda),
+    quantity: 1,
+  }));
+
+  const body = {
+    from: { postal_code: '96020360' }, // Substitua pelo CEP de origem
+    to: { postal_code: zipCodeAdress },
+    products,
+  };
+
+  try {
+    // Chamada para a API de cálculo de frete
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    // Verifica se a resposta foi bem-sucedida
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: `Erro ao comunicar com a API de frete: ${response.statusText}`,
+      });
+    }
+
+    const data = await response.json();
+
+    // Retorna o cálculo do frete
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      error: `Erro interno ao calcular o frete: ${error.message}`,
+    });
+  }
+})
+
 router.get('/mercadopagosuccess', async (req, res) => {
   res.json({ success: 'deu certo' });
 });
