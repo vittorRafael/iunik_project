@@ -140,6 +140,35 @@ const listMyProducts = async (req, res) => {
   }
 };
 
+const listMyProductsParams = async (req, res) => {
+  const {consultor_id, produto_ids} = req.body
+
+  if(!consultor_id  || produto_ids.length == 0)
+    return res.status(400).json({ error: 'Preencha todos os campos!' });
+
+  const consultor = await knex('usuarios').where('id', consultor_id).where('cargo_id', 4)
+  if(consultor.length == 0)
+    return res.status(400).json({ error: 'Consultor não existe!' });
+
+  try {
+    const products = await knex('consultor_produtos')
+      .select(['*', 'consultor_produtos.id'])
+      .where('consultor_produtos.consultor_id', consultor_id)
+      .whereIn('consultor_produtos.produto_id', produto_ids)
+      .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id');
+
+    if(products.length != produto_ids.length)
+      return res.status(400).json({
+        error: 'Produto selecionado não existe, tente novamente!',
+      });
+
+    return res.status(200).json(products);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: 'Erro no servidor!' });
+  }
+};
+
 const editProductConsult = async (req, res) => {
   const { id } = req.params;
   try {
@@ -220,4 +249,5 @@ module.exports = {
   listMyProducts,
   editProductConsult,
   deleteProductConsult,
+  listMyProductsParams
 };
