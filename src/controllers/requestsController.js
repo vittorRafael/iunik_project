@@ -17,13 +17,135 @@ const listRequests = async (req, res) => {
   const { id } = req.params;
   try {
     if (id < 1) {
-      const requests = await knex('pedidos').select('*');
-      return res.status(200).json(requests);
+      const pedidos = await knex('pedidos').select('*');
+      const enrichedPedidos = await Promise.all(
+        pedidos.map(async (pedido) => {
+          if(pedido.cliente_id != 1) {
+            let produtosIdsArray;
+      
+            // Garantir que produtos_ids é um array válido
+            if (typeof pedido.produtos_ids === 'string') {
+              try {
+                produtosIdsArray = JSON.parse(pedido.produtos_ids);
+              } catch (error) {
+                console.error('Erro ao parsear produtos_ids:', error);
+                produtosIdsArray = [];
+              }
+            } else if (Array.isArray(pedido.produtos_ids)) {
+              produtosIdsArray = pedido.produtos_ids;
+            } else {
+              produtosIdsArray = [];
+            }
+      
+            // Obter detalhes dos produtos
+            const produtos = await Promise.all(
+              produtosIdsArray.map((prodId) =>
+                knex('produtos').where({ id: prodId.id }).first()
+              )
+            );
+      
+            return { ...pedido, produtos };
+          } else if(pedido.consultor_id != 1) {
+            let produtosIdsArray;
+      
+            // Garantir que produtos_ids é um array válido
+            if (typeof pedido.produtos_ids === 'string') {
+              try {
+                produtosIdsArray = JSON.parse(pedido.produtos_ids);
+              } catch (error) {
+                console.error('Erro ao parsear produtos_ids:', error);
+                produtosIdsArray = [];
+              }
+            } else if (Array.isArray(pedido.produtos_ids)) {
+              produtosIdsArray = pedido.produtos_ids;
+            } else {
+              produtosIdsArray = [];
+            }
+      
+            // Obter detalhes dos produtos
+            const produtos = await Promise.all(
+              produtosIdsArray.map((prodId) =>
+                knex('consultor_produtos')
+                .select(['*', 'consultor_produtos.id'])
+                .where('consultor_id', pedido.consultor_id)
+                .where('consultor_produtos.produto_id', prodId.id)
+                .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id')
+                .first()
+              )
+            );
+      
+            return { ...pedido, produtos };
+          }
+        })
+      );
+
+      return res.status(200).json(enrichedPedidos);
     } else {
-      const request = await knex('pedidos').select('*').where('id', id);
-      if (request.length === 0)
+      const pedidos = await knex('pedidos').select('*').where('id', id);
+      if (pedidos.length === 0)
         return res.status(404).json({ error: 'Pedido não encontrado!' });
-      return res.status(200).json(request[0]);
+
+        const enrichedPedidos = await Promise.all(
+          pedidos.map(async (pedido) => {
+            if(pedido.cliente_id != 1) {
+              let produtosIdsArray;
+        
+              // Garantir que produtos_ids é um array válido
+              if (typeof pedido.produtos_ids === 'string') {
+                try {
+                  produtosIdsArray = JSON.parse(pedido.produtos_ids);
+                } catch (error) {
+                  console.error('Erro ao parsear produtos_ids:', error);
+                  produtosIdsArray = [];
+                }
+              } else if (Array.isArray(pedido.produtos_ids)) {
+                produtosIdsArray = pedido.produtos_ids;
+              } else {
+                produtosIdsArray = [];
+              }
+        
+              // Obter detalhes dos produtos
+              const produtos = await Promise.all(
+                produtosIdsArray.map((prodId) =>
+                  knex('produtos').where({ id: prodId.id }).first()
+                )
+              );
+        
+              return { ...pedido, produtos };
+            } else if(pedido.consultor_id != 1) {
+              let produtosIdsArray;
+        
+              // Garantir que produtos_ids é um array válido
+              if (typeof pedido.produtos_ids === 'string') {
+                try {
+                  produtosIdsArray = JSON.parse(pedido.produtos_ids);
+                } catch (error) {
+                  console.error('Erro ao parsear produtos_ids:', error);
+                  produtosIdsArray = [];
+                }
+              } else if (Array.isArray(pedido.produtos_ids)) {
+                produtosIdsArray = pedido.produtos_ids;
+              } else {
+                produtosIdsArray = [];
+              }
+        
+              // Obter detalhes dos produtos
+              const produtos = await Promise.all(
+                produtosIdsArray.map((prodId) =>
+                  knex('consultor_produtos')
+                  .select(['*', 'consultor_produtos.id'])
+                  .where('consultor_id', pedido.consultor_id)
+                  .where('consultor_produtos.produto_id', prodId.id)
+                  .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id')
+                  .first()
+                )
+              );
+        
+              return { ...pedido, produtos };
+            }
+          })
+        );
+      return res.status(200).json(enrichedPedidos[0]);
     }
   } catch (error) {
     return res.status(500).json({ error: 'Erro no servidor!' });
@@ -33,9 +155,71 @@ const listRequests = async (req, res) => {
 const listRequestsUsers = async (req, res) => {
   const { id } = req.params;
   try {
-      const requests = await knex('pedidos').select('*').where('consultor_id', id).orWhere('cliente_id', id);
-      return res.status(200).json(requests);
+      const pedidos = await knex('pedidos').select('*').where('consultor_id', id).orWhere('cliente_id', id);
+      const enrichedPedidos = await Promise.all(
+        pedidos.map(async (pedido) => {
+          if(pedido.cliente_id != 1) {
+            let produtosIdsArray;
+      
+            // Garantir que produtos_ids é um array válido
+            if (typeof pedido.produtos_ids === 'string') {
+              try {
+                produtosIdsArray = JSON.parse(pedido.produtos_ids);
+              } catch (error) {
+                console.error('Erro ao parsear produtos_ids:', error);
+                produtosIdsArray = [];
+              }
+            } else if (Array.isArray(pedido.produtos_ids)) {
+              produtosIdsArray = pedido.produtos_ids;
+            } else {
+              produtosIdsArray = [];
+            }
+      
+            // Obter detalhes dos produtos
+            const produtos = await Promise.all(
+              produtosIdsArray.map((prodId) =>
+                knex('produtos').where({ id: prodId.id }).first()
+              )
+            );
+      
+            return { ...pedido, produtos };
+          } else if(pedido.consultor_id != 1) {
+            let produtosIdsArray;
+      
+            // Garantir que produtos_ids é um array válido
+            if (typeof pedido.produtos_ids === 'string') {
+              try {
+                produtosIdsArray = JSON.parse(pedido.produtos_ids);
+              } catch (error) {
+                console.error('Erro ao parsear produtos_ids:', error);
+                produtosIdsArray = [];
+              }
+            } else if (Array.isArray(pedido.produtos_ids)) {
+              produtosIdsArray = pedido.produtos_ids;
+            } else {
+              produtosIdsArray = [];
+            }
+      
+            // Obter detalhes dos produtos
+            const produtos = await Promise.all(
+              produtosIdsArray.map((prodId) =>
+                knex('consultor_produtos')
+                .select(['*', 'consultor_produtos.id'])
+                .where('consultor_id', pedido.consultor_id)
+                .where('consultor_produtos.produto_id', prodId.id)
+                .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id')
+                .first()
+              )
+            );
+      
+            return { ...pedido, produtos };
+          }
+        })
+      );
+
+      return res.status(200).json(enrichedPedidos);
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ error: 'Erro no servidor!' });
   }
 };
