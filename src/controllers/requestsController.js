@@ -1124,6 +1124,10 @@ const addRequestUnlogged = async (req, res) => {
 
 
     try {
+      const consultor = await knex('usuarios').select('*').where('id', consultor_id).where('cargo_id', 4).first();
+      if(!consultor)
+        return res.status(400).json({ error: 'Consultor não existe!' });
+
       const ids = produtos_ids.map(produto => produto.id);
       const products = await knex('produtos')
         .select('*')
@@ -1197,6 +1201,8 @@ const addRequestUnlogged = async (req, res) => {
             },
           });
 
+          let nomeconsultor = consultor.nome
+
           const newRequest = {
             datapedido,
             formapag_id,
@@ -1221,7 +1227,7 @@ const addRequestUnlogged = async (req, res) => {
             nomecliente,
             emailcliente,
             cpfcliente,
-            nomeconsultor: ''
+            nomeconsultor
           };
       
           const request = await knex('pedidos').insert(newRequest).returning('*');
