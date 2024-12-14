@@ -195,7 +195,7 @@ const addComprov = async (req, res) => {
       },
     );
   } catch (error) {
-    return res.status(500).json({ error: 'Erro no servidor!' });
+    return res.status(500).json({ error: `Erro no servidor! ${error}` });
   }
 };
 

@@ -40,11 +40,12 @@ const listRequests = async (req, res) => {
             // Obter detalhes dos produtos
             const produtos = await Promise.all(
               produtosIdsArray.map((prodId) =>
-                knex('produtos').where({ id: prodId.id }).first()
+                knex('produtos').select('id as produto_id', '*').where({ id: prodId.id }).first()
+                
               )
             );
       
-            return { ...pedido, produtos };
+            return { ...pedido, produtos};
           } else if(pedido.consultor_id != 1) {
             let produtosIdsArray;
       
@@ -107,7 +108,7 @@ const listRequests = async (req, res) => {
               // Obter detalhes dos produtos
               const produtos = await Promise.all(
                 produtosIdsArray.map((prodId) =>
-                  knex('produtos').where({ id: prodId.id }).first()
+                knex('produtos').select('id as produto_id', '*').where({ id: prodId.id }).first()
                 )
               );
         
