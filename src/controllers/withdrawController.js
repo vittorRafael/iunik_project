@@ -142,7 +142,7 @@ const addComprov = async (req, res) => {
   const { id } = req.params;
   const file = req.file;
   const dateNow = new Date()
-  const datacomp = `${dateNow.getDate()}/${dateNow.getMonth()}/${dateNow.getFullYear()}`
+  const datacomp = `${dateNow.getDate()}/${dateNow.getMonth() + 1}/${dateNow.getFullYear()}`
   try {
     const withdraw = await knex('saques').select('*').where('id', id);
     if (withdraw.length === 0)
@@ -195,7 +195,7 @@ const addComprov = async (req, res) => {
       },
     );
   } catch (error) {
-    return res.status(500).json({ error: `Erro no servidor! ${error}` });
+    return res.status(500).json({ error: `Erro no servidor!` });
   }
 };
 
