@@ -85,7 +85,15 @@ async function consultarPagamento(paymentId) {
   console.log(data.external_reference);
 
   if (data.status === 'approved') {
-    await knex('pedidos').where('id', data.external_reference).update({ statuspag: 'realizado' })
+    const [pedido] = await knex('pedidos').where('id', data.external_reference).update({ statuspag: 'realizado' }).returning('*')
+
+    const moviment = {
+      tipo: 'entrada',
+      valor: pedido.valor,
+      pedido_id: pedido.id,
+    };
+    await knex('movimentacoes').insert(moviment);
+
     if(data.payment_method_id === 'pix' || data.payment_type_id === 'account_money') {
       await knex('pedidos').where('id', data.external_reference).update({ formapag_id: 1 })
     } else if(data.payment_type_id === 'credit_card') {

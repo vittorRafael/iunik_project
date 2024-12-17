@@ -1052,13 +1052,13 @@ const addRequestAbast = async (req,res) => {
         });
       }
 
-      const moviment = {
+      /* const moviment = {
         tipo: 'saída',
         valor: movimentValor.toFixed(2),
         pedido_id: request[0].id
       };
   
-      await knex('movimentacoes').insert(moviment);
+      await knex('movimentacoes').insert(moviment); */
       const datasaque = dataAtualFormatada();
       const data = {
         datasaque,
