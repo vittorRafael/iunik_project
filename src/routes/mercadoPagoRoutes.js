@@ -65,7 +65,7 @@ router.post('/webhook', async (req, res) => {
     return res.status(200).send() // Retorne 200 para confirmar o recebimento
   } catch (error) {
     console.error('Erro no webhook:', error.message);
-    return res.status(500).send('Erro ao processar o webhook');
+    return res.status(500).send(`Erro ao processar o webhook: ${error}`);
   }
 });
 
