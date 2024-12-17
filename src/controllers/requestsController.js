@@ -20,7 +20,7 @@ const listRequests = async (req, res) => {
       const pedidos = await knex('pedidos').select('*');
       const enrichedPedidos = await Promise.all(
         pedidos.map(async (pedido) => {
-          if(pedido.cliente_id != 1) {
+          if(pedido.cliente_id != 1 || pedido.modelo == 'abastecimento') {
             let produtosIdsArray;
       
             // Garantir que produtos_ids é um array válido
@@ -160,7 +160,7 @@ const listRequestsUsers = async (req, res) => {
       const pedidos = await knex('pedidos').select('*').where('consultor_id', id).orWhere('cliente_id', id);
       const enrichedPedidos = await Promise.all(
         pedidos.map(async (pedido) => {
-          if(pedido.cliente_id != 1) {
+          if(pedido.cliente_id != 1 || pedido.modelo == 'abastecimento') {
             let produtosIdsArray;
       
             // Garantir que produtos_ids é um array válido
