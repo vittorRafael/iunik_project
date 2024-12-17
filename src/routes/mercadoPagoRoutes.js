@@ -64,7 +64,7 @@ router.post('/webhook', async (req, res) => {
 
     return res.status(200).send() // Retorne 200 para confirmar o recebimento
   } catch (error) {
-    console.error('Erro no webhook:', error.message);
+    console.error('Erro no webhook:', error);
     return res.status(500).send(`Erro ao processar o webhook: ${error}`);
   }
 });
@@ -82,11 +82,10 @@ async function consultarPagamento(paymentId) {
   });
 
   const data = await response.json()
-  console.log(data.external_reference);
 
   if (data.status === 'approved') {
     const [pedido] = await knex('pedidos').where('id', data.external_reference).update({ statuspag: 'realizado' }).returning('*')
-
+    console.log(pedido);
     const moviment = {
       tipo: 'entrada',
       valor: pedido.valor,

@@ -935,6 +935,10 @@ const addRequestAbast = async (req,res) => {
             quantity: 1,
           });
 
+          const ultimoPedido = await knex('pedidos')
+          .orderBy('id', 'desc')
+          .first();
+
        const preference = new Preference(client);
   
         response = await preference.create({
@@ -945,6 +949,7 @@ const addRequestAbast = async (req,res) => {
              failure: 'http://85.31.61.50/mercadopagofailure',
             },
             auto_return: 'approved',
+            external_reference: ultimoPedido.id + 1
           },
         });
 
