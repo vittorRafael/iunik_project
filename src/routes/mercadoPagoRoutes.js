@@ -54,9 +54,7 @@ router.post('/webhook', async (req, res) => {
     const { data, type } = req.body;
     if (type === 'payment') {
       // Consulta o pagamento pelo ID recebido
-      const paymentInfo = await consultarPagamento(data.id);
-      console.log(paymentInfo);
-      // Aqui você pode salvar os dados no banco ou realizar outras ações
+      await consultarPagamento(data.id);
     } else {
       console.log(`Evento ignorado: ${type}`);
       return res.json({ error: `Evento ignorado: ${type}`});
@@ -82,32 +80,35 @@ async function consultarPagamento(paymentId) {
   });
 
   const data = await response.json()
+  console.log(data.external_reference);
 
   if (data.status === 'approved') {
     const [pedido] = await knex('pedidos').where('id', data.external_reference).update({ statuspag: 'realizado' }).returning('*')
-    console.log(pedido);
-    const moviment = {
-      tipo: 'entrada',
-      valor: pedido.valor,
-      pedido_id: pedido.id,
-    };
-    await knex('movimentacoes').insert(moviment);
-
-    if(data.payment_method_id === 'pix' || data.payment_type_id === 'account_money') {
-      await knex('pedidos').where('id', data.external_reference).update({ formapag_id: 1 })
-    } else if(data.payment_type_id === 'credit_card') {
-      await knex('pedidos').where('id', data.external_reference).update({ formapag_id: 2 })
-    } else if(data.payment_type_id === 'debit_card') {
-      await knex('pedidos').where('id', data.external_reference).update({ formapag_id: 3 })
-    } else if(data.payment_type_id === 'ticket') {
-      await knex('pedidos').where('id', data.external_reference).update({ formapag_id: 4 })
+    const movimentExist = await knex('movimentacoes').where('pedido_id', pedido.id).first()
+    if(!movimentExist) {
+      const moviment = {
+        tipo: 'entrada',
+        valor: pedido.valor,
+        pedido_id: pedido.id,
+      };
+      await knex('movimentacoes').insert(moviment);
+  
+      if(data.payment_method_id === 'pix' || data.payment_type_id === 'account_money') {
+        await knex('pedidos').where('id', data.external_reference).update({ formapag_id: 1 })
+      } else if(data.payment_type_id === 'credit_card') {
+        await knex('pedidos').where('id', data.external_reference).update({ formapag_id: 2 })
+      } else if(data.payment_type_id === 'debit_card') {
+        await knex('pedidos').where('id', data.external_reference).update({ formapag_id: 3 })
+      } else if(data.payment_type_id === 'ticket') {
+        await knex('pedidos').where('id', data.external_reference).update({ formapag_id: 4 })
+      }
     }
+    
   } else if (data.status === 'pending') {
     await knex('pedidos').where('id', data.external_reference).update({ statuspag: 'aguardando' })
   } else {
     await knex('pedidos').where('id', data.external_reference).update({ statuspag: 'recusado' })
   }
-  return await response.json();
 }
 
 router.post('/calcularfrete', async (req, res) => {
