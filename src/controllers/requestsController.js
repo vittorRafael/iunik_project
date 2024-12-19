@@ -65,14 +65,23 @@ const listRequests = async (req, res) => {
       
             // Obter detalhes dos produtos
             const produtos = await Promise.all(
-              produtosIdsArray.map((prodId) =>
-                knex('consultor_produtos')
-                .select(['*', 'consultor_produtos.id'])
-                .where('consultor_id', pedido.consultor_id)
-                .where('consultor_produtos.produto_id', prodId.id)
-                .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id')
-                .first()
-              )
+              produtosIdsArray.map(async (prodId) => {
+                const consultorProduto = await knex('consultor_produtos')
+                  .select(['*', 'consultor_produtos.id'])
+                  .where('consultor_id', pedido.consultor_id)
+                  .where('consultor_produtos.produto_id', prodId.id)
+                  .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id')
+                  .first();
+            
+                if (consultorProduto) {
+                  return consultorProduto;
+                }
+            
+                // Caso não exista na tabela consultor_produtos, buscar diretamente na tabela produtos
+                const produto = await knex('produtos').select('id as produto_id', '*').where({ id: prodId.id }).first()
+            
+                return produto;
+              })
             );
       
             return { ...pedido, produtos };
@@ -130,18 +139,26 @@ const listRequests = async (req, res) => {
                 produtosIdsArray = [];
               }
         
-              // Obter detalhes dos produtos
               const produtos = await Promise.all(
-                produtosIdsArray.map((prodId) =>
-                  knex('consultor_produtos')
-                  .select(['*', 'consultor_produtos.id'])
-                  .where('consultor_id', pedido.consultor_id)
-                  .where('consultor_produtos.produto_id', prodId.id)
-                  .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id')
-                  .first()
-                )
+                produtosIdsArray.map(async (prodId) => {
+                  const consultorProduto = await knex('consultor_produtos')
+                    .select(['*', 'consultor_produtos.id'])
+                    .where('consultor_id', pedido.consultor_id)
+                    .where('consultor_produtos.produto_id', prodId.id)
+                    .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id')
+                    .first();
+              
+                  if (consultorProduto) {
+                    return consultorProduto;
+                  }
+              
+                  // Caso não exista na tabela consultor_produtos, buscar diretamente na tabela produtos
+                  const produto = await knex('produtos').select('id as produto_id', '*').where({ id: prodId.id }).first()
+              
+                  return produto;
+                })
               );
-        
+
               return { ...pedido, produtos };
             }
           })
@@ -204,14 +221,23 @@ const listRequestsUsers = async (req, res) => {
       
             // Obter detalhes dos produtos
             const produtos = await Promise.all(
-              produtosIdsArray.map((prodId) =>
-                knex('consultor_produtos')
-                .select(['*', 'consultor_produtos.id'])
-                .where('consultor_id', pedido.consultor_id)
-                .where('consultor_produtos.produto_id', prodId.id)
-                .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id')
-                .first()
-              )
+              produtosIdsArray.map(async (prodId) => {
+                const consultorProduto = await knex('consultor_produtos')
+                  .select(['*', 'consultor_produtos.id'])
+                  .where('consultor_id', pedido.consultor_id)
+                  .where('consultor_produtos.produto_id', prodId.id)
+                  .innerJoin('produtos', 'produtos.id', 'consultor_produtos.produto_id')
+                  .first();
+            
+                if (consultorProduto) {
+                  return consultorProduto;
+                }
+            
+                // Caso não exista na tabela consultor_produtos, buscar diretamente na tabela produtos
+                const produto = await knex('produtos').select('id as produto_id', '*').where({ id: prodId.id }).first()
+            
+                return produto;
+              })
             );
       
             return { ...pedido, produtos };
@@ -273,6 +299,7 @@ const addRequest = async (req, res) => {
       .where('id', user_id)
       .where('cargo_id', 4); 
     if (existConsult.length === 0) {
+      console.log('entrou  aqui');
       const existCliente = await knex('usuarios')
         .where('id', user_id)
         .where('cargo_id', 5);
@@ -295,7 +322,7 @@ const addRequest = async (req, res) => {
           .json({ error: 'Produto selecionado não existe, tente novamente!' });
 
       products.forEach(async (product, i) => {
-        valor += parseFloat(product.valorvenda);
+        valor += parseFloat(product.valorvenda) * parseInt(produtos_ids[i].quantidade);
         items.push({
           id: product.id,
           title: product.nome,
