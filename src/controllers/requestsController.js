@@ -1300,7 +1300,7 @@ const addRequestUnlogged = async (req, res) => {
     return res.status(200).json({
       success: 'Pedido cadastrado com sucesso!',
       link: response.init_point,
-      newRequest
+      items
     });
     } catch (error) {
       console.log(error);
