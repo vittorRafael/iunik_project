@@ -321,7 +321,8 @@ const addRequest = async (req, res) => {
           .status(400)
           .json({ error: 'Produto selecionado não existe, tente novamente!' });
 
-      products.forEach(async (product, i) => {
+      products.forEach(async (product) => {
+        const i = produtos_ids.findIndex(produto => produto.id === (product.produto_id ? product.produto_id : product.id));
         valor += parseFloat(product.valorvenda) * parseInt(produtos_ids[i].quantidade);
         items.push({
           id: product.id,
@@ -1165,13 +1166,14 @@ const addRequestUnlogged = async (req, res) => {
           .json({ error: 'Produto selecionado não existe, tente novamente!' });
 
           
-      products.forEach(async (product, i) => {
+      products.forEach(async (product) => {
         const productConsult  = await knex('consultor_produtos')
         .select('*')
         .where('consultor_id', consultor_id)
         .where('produto_id', product.id)
 
         if(productConsult.length == 0) {
+          const i = produtos_ids.findIndex(produto => produto.id === product.id);
           valor += parseFloat(product.valorvenda) * parseInt(produtos_ids[i].quantidade);
           items.push({
             id: product.id,
@@ -1184,6 +1186,7 @@ const addRequestUnlogged = async (req, res) => {
             unit_price: parseFloat(product.valorvenda), 
           });
         } else {
+          const i = produtos_ids.findIndex(produto => produto.id === productConsult[0].produto_id);
           valor += parseFloat(productConsult[0].valortotal) * parseInt(produtos_ids[i].quantidade);
           items.push({
             id: product.id,
