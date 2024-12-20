@@ -417,8 +417,8 @@ const addRequest = async (req, res) => {
       body: {
         items,
         back_urls: {
-          success: 'http://85.31.61.50/mercadopagosuccess',
-          failure: 'http://85.31.61.50/mercadopagofailure',
+          success: 'https://site.iuniktech.com.br/mercadopagosuccess',
+          failure: 'https://site.iuniktech.com.br/mercadopagofailure',
         },
         auto_return: 'approved',
         external_reference: ultimoPedido.id + 1
@@ -972,8 +972,8 @@ const addRequestAbast = async (req,res) => {
           body: {
            items,
            back_urls: {
-              success: 'http://85.31.61.50/mercadopagosuccess',
-             failure: 'http://85.31.61.50/mercadopagofailure',
+              success: 'https://site.iuniktech.com.br/mercadopagosuccess',
+             failure: 'https://site.iuniktech.com.br/mercadopagofailure',
             },
             auto_return: 'approved',
             external_reference: ultimoPedido.id + 1
@@ -1172,7 +1172,7 @@ const addRequestUnlogged = async (req, res) => {
         .where('produto_id', product.id)
 
         if(productConsult.length == 0) {
-          valor += parseFloat(product.valorvenda);
+          valor += parseFloat(product.valorvenda) * parseInt(produtos_ids[i].quantidade);
           items.push({
             id: product.id,
             title: product.nome,
@@ -1184,7 +1184,7 @@ const addRequestUnlogged = async (req, res) => {
             unit_price: parseFloat(product.valorvenda), 
           });
         } else {
-          valor += parseFloat(productConsult[0].valortotal);
+          valor += parseFloat(productConsult[0].valortotal) * parseInt(produtos_ids[i].quantidade);
           items.push({
             id: product.id,
             title: product.nome,
@@ -1218,8 +1218,8 @@ const addRequestUnlogged = async (req, res) => {
             body: {
               items,
               back_urls: {
-                success: 'http://85.31.61.50/mercadopagosuccess',
-                failure: 'http://85.31.61.50/mercadopagofailure',
+                success: 'https://site.iuniktech.com.br/mercadopagosuccess',
+                failure: 'https://site.iuniktech.com.br/mercadopagofailure',
               },
               auto_return: 'approved',
               external_reference: ultimoPedido.id + 1
