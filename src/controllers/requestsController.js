@@ -869,7 +869,10 @@ const addRequestAbast = async (req,res) => {
     complemento,
     formaenvio,
     nomecliente,
-    nomeconsultor
+    nomeconsultor,
+    emailcliente,
+    cpfcliente,
+    telefone, 
   } = req.body;
   const valorfrete = parseFloat(req.body.valorfrete) || 0;
   const admins = await knex('usuarios').where('cargo_id', 1);
@@ -1038,11 +1041,14 @@ const addRequestAbast = async (req,res) => {
         cidade,
         estado,
         complemento,
+        telefone,
         mercadopago_id: response.id,
         linkpagamento: response.init_point,
         formaenvio,
         nomecliente: nomecliente ?? '',
-        nomeconsultor: nomeconsultor ?? ''
+        nomeconsultor: nomecliente ?? '',
+        emailcliente: emailcliente ?? '',
+        cpfcliente: cpfcliente ?? '',
       };
 
       if(statuspag) newRequest.statuspag = statuspag
