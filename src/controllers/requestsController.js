@@ -1135,6 +1135,7 @@ const addRequestUnlogged = async (req, res) => {
   const admins = await knex('usuarios').where('cargo_id', 1);
   const items = []
   let valor = 0
+  let valorconsult = 0;
   let cliente_id = 1
 
   if (
@@ -1193,6 +1194,7 @@ const addRequestUnlogged = async (req, res) => {
           });
         } else {
           const i = produtos_ids.findIndex(produto => produto.id === productConsult[0].produto_id);
+          valorconsult += parseFloat(productConsult[0].valorconsult) * produtos_ids[i].quantidade;
           valor += parseFloat(productConsult[0].valortotal) * parseInt(produtos_ids[i].quantidade);
           items.push({
             id: product.id,
@@ -1241,7 +1243,7 @@ const addRequestUnlogged = async (req, res) => {
             datapedido,
             formapag_id,
             valor: valor.toFixed(2),
-            valorconsult: 0,
+            valorconsult: valorconsult.toFixed(2),
             valorfrete: valorfrete.toFixed(2),
             consultor_id,
             cliente_id,
