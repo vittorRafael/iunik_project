@@ -103,6 +103,13 @@ async function consultarPagamento(paymentId) {
       }
     }
     
+    // Atualizando o campo qtdParcelas com a quantidade de parcelas
+    if (data.payment_type_id === 'credit_card' && data.installments) {
+      await knex('pedidos')
+        .where('id', data.external_reference)
+        .update({ qtdParcelas: data.installments });
+    }
+    
   } else if (data.status === 'pending') {
     await knex('pedidos').where('id', data.external_reference).update({ statuspag: 'aguardando' })
   } else {
