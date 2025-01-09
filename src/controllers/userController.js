@@ -261,6 +261,33 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const deleteProfile = async (req, res) => {
+  const {id} = req.userLogged
+
+  try {
+    await knex("movimentacoes").del().whereIn(
+      "saque_id",
+      knex("saques").select("id").where({ consultor_id: id })
+    );
+    await knex("movimentacoes").del().whereIn(
+      "pedido_id",
+      knex("pedidos").select("id").where({ consultor_id: id }).orWhere({ cliente_id: id })
+    );
+    //pedidos, saques, consultor_produtos, enderecos
+    await knex("pedidos").del().where({consultor_id: id}).orWhere({cliente_id: id})
+    await knex("saques").del().where({consultor_id: id})
+    await knex("consultor_produtos").del().where({consultor_id: id})
+    await knex("enderecos").del().where({usuario_id: id})
+    await knex("usuarios").del().where({id})
+    const userExist = await knex("usuarios").where({id}).first()
+    if(userExist) return res.status(400).json({error: "Não foi possível excluir o usuário, tente novamente!"})
+    return res.status(200).json({success: "Usuário excluído com sucesso!"})
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: 'Erro no servidor!' });
+  }
+};
+
 const listUsers = async (req, res) => {
   const { id } = req.params;
   try {
@@ -370,4 +397,5 @@ module.exports = {
   removeImg,
   addCert,
   removeCert,
+  deleteProfile
 };

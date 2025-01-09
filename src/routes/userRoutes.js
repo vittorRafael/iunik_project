@@ -42,5 +42,6 @@ router.delete('/perfil/foto', userController.removeImg);
 router.delete('/perfil/certificado', userController.removeCert);
 
 router.patch('/perfil', userController.updateProfile);
+router.delete('/perfil', userController.deleteProfile);
 
 module.exports = router;
