@@ -27,6 +27,7 @@ router.post(
 );
 
 router.get('/perfil', userController.getProfile);
+router.delete('/perfil', userController.deleteProfile);
 
 // Verificar usuario ativo
 router.use(checkActivate)
@@ -42,6 +43,6 @@ router.delete('/perfil/foto', userController.removeImg);
 router.delete('/perfil/certificado', userController.removeCert);
 
 router.patch('/perfil', userController.updateProfile);
-router.delete('/perfil', userController.deleteProfile);
+
 
 module.exports = router;
