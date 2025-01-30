@@ -12,7 +12,7 @@ const login = async (req, res) => {
     return res.status(400).json({ error: 'Preencha todos os campos!' });
 
   try {
-    const existUser = await knex('usuarios').where('email', email);
+    const existUser = await knex('usuarios').where('email', email).where('inativo', false);
 
     if (existUser.length === 0)
       return res.status(404).json({ error: 'Usuário não encontrado!' });
